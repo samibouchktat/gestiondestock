@@ -1,0 +1,412 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light" id="mainHtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Articles | Dashboard PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap + FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'articles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        html, body { height: 100%; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(120deg, #f4f8fb 70%, #eaf9f4 100%);
+            transition: background 0.4s;
+            font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+        }
+        .glass-header {
+            background: linear-gradient(90deg, rgba(10,38,71,0.95) 45%, rgba(32,201,151,0.93) 100%);
+            box-shadow: 0 6px 32px 0 rgba(33,62,87,.11), 0 1.5px 8px #20c99755;
+            color: #fff;
+            border-radius: 2rem;
+            padding: 2.8rem 2.5rem 2.2rem 2.5rem;
+            margin-bottom: 2.6rem;
+            backdrop-filter: blur(6px);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .glass-header:before {
+            content: "";
+            position: absolute;
+            right: -65px; top: -75px;
+            width: 220px; height: 220px;
+            border-radius: 100%;
+            background: linear-gradient(130deg, #20c99788, #1097db33 60%);
+            filter: blur(12px);
+            opacity: 0.6;
+            z-index: 1;
+        }
+        .text-gradient {
+            background: linear-gradient(90deg, #53b5fe 30%, #20c997 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .btn-pro {
+            background: linear-gradient(90deg, #0a2647, #20c997);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 2.2em;
+            box-shadow: 0 2px 12px #0a264733;
+            transition: box-shadow .2s, transform .19s;
+        }
+        .btn-pro:hover {
+            box-shadow: 0 4px 20px #20c99733;
+            color: #fff;
+            transform: scale(1.06) rotate(-2deg);
+        }
+        .btn-export-excel, .btn-export-pdf {
+            font-size: 1.06rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 2.2em;
+            display: flex; align-items: center; gap: .6em;
+            padding: 0.7em 2em 0.7em 1.2em;
+            box-shadow: 0 1px 9px #1097db11;
+            transition: background 0.18s, box-shadow 0.2s, transform 0.17s;
+            letter-spacing: .5px;
+        }
+        .btn-export-excel {
+            background: linear-gradient(90deg, #16c43a, #a2e7b3 90%);
+            color: #fff;
+        }
+        .btn-export-excel:hover, .btn-export-excel:focus {
+            background: linear-gradient(90deg, #119d34, #77ce8b 100%);
+            transform: scale(1.08) rotate(-2deg);
+            color: #fff;
+            box-shadow: 0 6px 20px #21bf6d30;
+        }
+        .btn-export-pdf {
+            background: linear-gradient(90deg, #e01d3f, #fd7b7b 100%);
+            color: #fff;
+        }
+        .btn-export-pdf:hover, .btn-export-pdf:focus {
+            background: linear-gradient(90deg, #a90432, #ff6464 100%);
+            color: #fff;
+            box-shadow: 0 6px 20px #e01d3f30;
+            transform: scale(1.08) rotate(2deg);
+        }
+        .btn-export-excel i, .btn-export-pdf i { font-size: 1.3em; transition:transform .2s;}
+        .btn-export-excel:hover i, .btn-export-pdf:hover i { animation: iconBounce .7s;}
+        @keyframes iconBounce {
+        0% { transform: scale(1);}
+        40% { transform: scale(1.35) rotate(-18deg);}
+        60% { transform: scale(1.18) rotate(10deg);}
+        100% { transform: scale(1) rotate(0);}
+        }
+        .glass-header .btn-export-excel, .glass-header .btn-export-pdf { font-size: 1em; }
+        .glass-header .btn-pro { font-size: 1.08em; }
+        .glass-header .header-actions > * { z-index: 2; }
+        .search-box {
+            max-width: 380px;
+            border-radius: 2em;
+            box-shadow: 0 0px 12px #20c99710;
+            padding-left: 2.5em !important;
+            font-size: 1.12em;
+            font-weight: 400;
+            background: #fff;
+            animation: fadeInDown .8s cubic-bezier(.23,1.16,.59,.98) 1;
+        }
+        @keyframes fadeInDown {
+        0% { opacity:0; transform: translateY(-22px);}
+        100% { opacity:1; transform: translateY(0);}
+        }
+        .search-box:focus {
+            border-color: #20c997;
+            box-shadow: 0 4px 24px #20c99725;
+        }
+        .search-loupe {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            color: #0a2647cc; font-size: 1.2em; pointer-events: none; opacity: .6;
+            transition: color .18s;
+        }
+        .card { border-radius: 1.4rem; box-shadow: 0 3px 24px #0a26471a; }
+        .table th, .table td { vertical-align: middle; font-size: 1.09em; }
+        tr.shadow-row { transition: box-shadow 0.15s, background 0.18s;}
+        tr.shadow-row:hover { background-color: #e3f6fc; box-shadow: 0 0 24px #0a264710;}
+        /* BADGE QUANTITÉ DYNAMIQUE */
+        .badge-qty {
+            font-size: 1.13em;
+            font-weight: 700;
+            box-shadow: 0 1px 4px #20c99719;
+            transition: background 0.25s, color 0.25s, transform .16s;
+        }
+        .badge-qty-high   { background: linear-gradient(90deg,#e2edfa,#c4f0c5); color: #119d34; }
+        .badge-qty-medium { background: linear-gradient(90deg,#f7f3d7,#ffe27e); color: #c29a02; }
+        .badge-qty-low    { background: linear-gradient(90deg,#ffdede,#ff7e7e); color: #c40029; animation: shakeBadge .75s infinite alternate linear; }
+        @keyframes shakeBadge {
+            0% { transform: scale(1);}
+            100% { transform: scale(1.07) rotate(-3deg);}
+        }
+        /* ACTION BUTTONS PULSE & ICONE ANIM */
+        .pulse-btn { position:relative; overflow:hidden; z-index:2; animation:btnPulse 2.3s infinite cubic-bezier(.57,1.35,.58,1.01); transition:transform .16s;}
+        .pulse-btn:hover, .pulse-btn:focus { animation:none; transform:scale(1.18) rotate(-2deg); z-index:9;}
+        @keyframes btnPulse {
+            0% { box-shadow: 0 0 0 0 #20c99777; }
+            60% { box-shadow: 0 0 0 7px transparent; }
+            100% { box-shadow: 0 0 0 0 transparent; }
+        }
+        .animated-icon { transition:transform .16s;}
+        .pulse-btn:hover .animated-icon { animation: iconWiggle .45s;}
+        @keyframes iconWiggle {
+            0% { transform: scale(1) rotate(0);}
+            40% { transform: scale(1.3) rotate(-16deg);}
+            100% { transform: scale(1) rotate(0);}
+        }
+        .table thead { background: linear-gradient(90deg,#ecf5fd 60%,#d0f7e7 100%);}
+        .table-light th { font-weight: 700;}
+        @media (max-width: 991px) {
+            .glass-header { flex-direction: column !important; align-items: flex-start !important; gap: 2em !important;}
+            .glass-header h1 { font-size: 1.45rem;}
+        }
+        @media (max-width: 575px) {
+            .glass-header { padding: 1.6rem 0.9rem 1.2rem 1rem;}
+            .btn-pro, .btn-export-excel, .btn-export-pdf { font-size: 0.98em; padding: 0.6em 1em;}
+        }
+        [data-bs-theme="dark"] body { background: linear-gradient(120deg, #131e29 80%, #1a3d3d 100%) !important;}
+        [data-bs-theme="dark"] .card, [data-bs-theme="dark"] .glass-header { background: #1a2739 !important; color: #d0f6e7;}
+        [data-bs-theme="dark"] .table { color: #e8f0fe;}
+        [data-bs-theme="dark"] .table-light { background: #25334a !important;}
+        [data-bs-theme="dark"] .search-box { background: #181f29; color: #e8f0fe;}
+        [data-bs-theme="dark"] .text-gradient { -webkit-text-fill-color: #fff;}
+        [data-bs-theme="dark"] .search-loupe { color: #d1f6e5bb;}
+        /* Toast notification */
+        .toast-notif {
+        position: fixed; bottom: 2.8em; right: 1.2em; background: #1cb96e;
+        color: #fff; font-weight: bold; padding: 1.1em 2.2em; border-radius: 2em;
+        box-shadow: 0 2px 22px #1cb96e44; opacity: 0; pointer-events:none; z-index:1100;
+        transition: opacity .3s, transform .3s;
+        }
+        .toast-notif.show { opacity:1; pointer-events:auto; transform: translateY(-18px);}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-cubes"></i> GestionStock PRO</a>
+        <div class="ms-auto d-flex gap-3 align-items-center">
+            <button id="toggleDark" class="btn btn-outline-light btn-sm rounded-pill" title="Mode Sombre/Clair">
+                <i class="fa fa-moon"></i>
+            </button>
+            {% if user.is_authenticated %}
+                <span class="navbar-text text-light small"><i class="fa-regular fa-user"></i> {{ user.username|default:"Utilisateur" }}</span>
+                <a href="{% url 'log_out' %}" class="btn btn-outline-light btn-sm">Déconnexion</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <!-- Header glassmorphism PRO -->
+    <div class="glass-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 shadow">
+        <div>
+            <h1 class="mb-2 text-gradient"><i class="fa-solid fa-cube"></i> Gestion des Articles</h1>
+            <div class="fs-6">Suivi en temps réel, actions rapides et gestion centralisée du stock.</div>
+        </div>
+        <div class="header-actions d-flex gap-3 align-items-center flex-wrap">
+            {% if user.role == 'gestionnaire' or user.role == 'admin' %}
+            <a href="{% url 'add_product' %}" class="btn btn-pro btn-lg rounded-pill px-4 shadow pulse-btn">
+                <i class="fa-solid fa-plus animated-icon"></i> Ajouter un Article
+            </a>
+            {% endif %}
+            <a href="{% url 'export_articles' format='excel' %}" class="btn btn-export-excel shadow-sm" onclick="showToast('Export Excel réussi !')">
+                <i class="fa-solid fa-file-excel"></i> <span class="d-none d-sm-inline">Exporter Excel</span>
+            </a>
+            <a href="{% url 'export_articles' format='pdf' %}" class="btn btn-export-pdf shadow-sm" onclick="showToast('Export PDF réussi !')">
+                <i class="fa-solid fa-file-pdf"></i> <span class="d-none d-sm-inline">Exporter PDF</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Barre de recherche flottante -->
+    <form method="get" class="d-flex justify-content-end align-items-center mb-4" style="position:relative;">
+        <span class="search-loupe"><i class="fa fa-search"></i></span>
+        <input type="text" name="search" id="searchInput" class="form-control search-box shadow-sm"
+            placeholder="Rechercher par nom ou référence…" value="{{ request.GET.search|default_if_none:'' }}">
+    </form>
+
+    <!-- Tableau -->
+    <div class="card shadow-lg border-0 rounded-xl animate__animated animate__fadeIn">
+        <div class="card-body">
+            <table class="table align-middle table-hover table-borderless mb-0" id="articlesTable">
+                <thead class="table-light text-uppercase small">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Référence</th>
+                        <th>Prix</th>
+                        <th>Quantité</th>   {# Affiche désormais `article.stock` #}
+                        {% if user.role == 'gestionnaire' or user.role == 'admin' %}
+                        <th class="text-center">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for article in products %}
+                    <tr class="shadow-row animate__animated animate__fadeIn"
+                        style="animation-delay: {{ forloop.counter|add:0.09|floatformat:'2' }}s;">
+                        <td class="fw-semibold">{{ article.nom }}</td>
+                        <td>{{ article.reference }}</td>
+                        <td class="text-primary">{{ article.prix }} <span class="text-muted small">€</span></td>
+                        <td>
+                            {# On applique la classe de badge en fonction de `article.stock` #}
+                            <span class="badge badge-qty rounded-pill px-3 py-2
+                                {% if article.stock > 50 %}badge-qty-high
+                                {% elif article.stock > 10 %}badge-qty-medium
+                                {% else %}badge-qty-low{% endif %}">
+                                {{ article.stock }}
+                            </span>
+                        </td>
+                        {% if user.role == 'gestionnaire' or user.role == 'admin' %}
+                        <td class="text-center">
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3 pulse-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#viewArticleModal"
+                                onclick="showArticleDetails(
+                                    '{{ article.nom }}',
+                                    '{{ article.reference }}',
+                                    '{{ article.prix }}',
+                                    '{{ article.stock }}'  /* on passe stock ici */
+                                )">
+                                <i class="fa-solid fa-eye animated-icon"></i>
+                            </button>
+                            <a href="{% url 'edit_product' article.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 pulse-btn">
+                                <i class="fa-solid fa-pen animated-icon"></i>
+                            </a>
+                            <a href="{% url 'delete_product' article.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 pulse-btn">
+                                <i class="fa-solid fa-trash animated-icon"></i>
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="{% if user.role == 'gestionnaire' or user.role == 'admin' %}5{% else %}4{% endif %}"
+                            class="text-center text-muted">
+                            Aucun article disponible pour le moment.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination stylée -->
+    {% if products.has_other_pages %}
+    <nav class="my-4 d-flex justify-content-center animate__animated animate__fadeIn">
+        <ul class="pagination">
+            {% if products.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products.previous_page_number }}&search={{ request.GET.search }}">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa fa-chevron-left"></i></span>
+            </li>
+            {% endif %}
+            {% for i in products.paginator.page_range %}
+                {% if products.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}&search={{ request.GET.search }}">{{ i }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products.next_page_number }}&search={{ request.GET.search }}">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa fa-chevron-right"></i></span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Modal Détails -->
+<div class="modal fade" id="viewArticleModal" tabindex="-1" aria-labelledby="viewArticleLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewArticleLabel"><i class="fa-solid fa-cube"></i> Détails de l’article</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body" id="modalArticleContent">
+                <div class="d-flex flex-column gap-2">
+                    <div><strong>Nom :</strong> <span id="modalArticleNom"></span></div>
+                    <div><strong>Référence :</strong> <span id="modalArticleReference"></span></div>
+                    <div><strong>Prix :</strong> <span id="modalArticlePrix"></span> €</div>
+                    <div><strong>Quantité :</strong> <span id="modalArticleQuantite"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast-notif"></div>
+
+<footer class="mt-5 text-center text-muted small"
+        style="position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,0.75); z-index:100;">
+    &copy; {{ now.year }} Société GestionStock PRO. Tous droits réservés.
+</footer>
+
+<!-- Bootstrap JS + Animations -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Dark mode toggle (Bootstrap 5.3)
+    const htmlRoot = document.getElementById('mainHtml');
+    document.getElementById('toggleDark').onclick = function () {
+        let isDark = htmlRoot.getAttribute('data-bs-theme') === 'dark';
+        htmlRoot.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+        localStorage.setItem('mode', isDark ? 'light' : 'dark');
+    }
+    if (localStorage.getItem('mode') === 'dark') {
+        htmlRoot.setAttribute('data-bs-theme', 'dark');
+    }
+
+    // Recherche dynamique (client‐side)
+    const searchInput = document.getElementById('searchInput');
+    searchInput && searchInput.addEventListener('keyup', function () {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('#articlesTable tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
+        });
+    });
+
+    // Affichage modale détails article
+    function showArticleDetails(nom, reference, prix, stock) {
+        document.getElementById('modalArticleNom').innerText = nom;
+        document.getElementById('modalArticleReference').innerText = reference;
+        document.getElementById('modalArticlePrix').innerText = prix;
+        document.getElementById('modalArticleQuantite').innerText = stock;
+    }
+
+    // Toast notification
+    function showToast(msg) {
+        var toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+</script>
+</body>
+</html>
+<!-- End of gestiondestock/templates/articles.html -->

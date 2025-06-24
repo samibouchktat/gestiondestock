@@ -1,0 +1,85 @@
+{# templates/employe_base.html #}
+{% extends 'basee.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord – Employé{% endblock %}
+
+{% block sidebar %}
+  <li>
+    <a href="{% url 'dashboard_employe' %}"
+       class="{% if request.resolver_match.url_name == 'dashboard_employe' %}active{% endif %}">
+      <i class="fas fa-home"></i> Accueil
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'product_list' %}"
+       class="{% if request.resolver_match.url_name == 'product_list' %}active{% endif %}">
+      <i class="fas fa-box-open"></i> Articles
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'faire_demande' %}"
+       class="{% if request.resolver_match.url_name == 'faire_demande' %}active{% endif %}">
+      <i class="fas fa-plus-circle"></i> Faire une demande
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'mes_demandes' %}"
+       class="{% if request.resolver_match.url_name == 'mes_demandes' %}active{% endif %}">
+      <i class="fas fa-folder-open"></i> Mes demandes
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'msg' %}"
+       class="{% if request.resolver_match.url_name == 'msg' or request.resolver_match.url_name == 'conv' %}active{% endif %}">
+      <i class="fas fa-envelope-open-text"></i> Messages
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'complete_profile' %}"
+       class="{% if request.resolver_match.url_name == 'complete_profile' %}active{% endif %}">
+      <i class="fas fa-user-cog"></i> Profil
+    </a>
+  </li>
+{% endblock %}
+
+{% block navbar %}
+  <a class="navbar-brand" href="{% url 'dashboard_employe' %}">
+    <i class="fas fa-user-tie me-2"></i> Employé
+  </a>
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_employe' %}active{% endif %}"
+         href="{% url 'dashboard_employe' %}">
+        Accueil
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+         href="{% url 'product_list' %}">
+        Articles
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if request.resolver_match.url_name == 'msg' %}active{% endif %}"
+         href="{% url 'msg' %}">
+        Messages
+      </a>
+    </li>
+  </ul>
+  <a href="{% url 'log_out' %}" class="btn btn-outline-danger">Déconnexion</a>
+{% endblock %}
+
+{% block hero %}
+  <div class="text-center py-5">
+    <h1 class="display-5 text-gradient">
+      <i class="fas fa-user-circle"></i>
+      Bonjour, {{ request.user.get_full_name|default:request.user.username }} !
+    </h1>
+    <p class="lead">Votre espace employé : consultez, demandez et communiquez en toute simplicité.</p>
+  </div>
+{% endblock %}
+
+{% block content %}
+{# Page‐specific content goes here #}
+{% endblock %}

@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Faire une demande d'article | GestionStock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f4f6fb 70%, #e8f0fc 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      color: #222a36;
+    }
+    .request-card {
+      max-width: 480px;
+      margin: 3.5rem auto 1.5rem auto;
+      padding: 2.3rem 2rem 2rem 2rem;
+      background: rgba(255,255,255,0.97);
+      border-radius: 1.3rem;
+      box-shadow: 0 8px 32px 0 rgba(52, 87, 179, 0.10);
+      animation: slideInDown .7s cubic-bezier(.25,1.2,.5,1) both;
+    }
+    @keyframes slideInDown {
+      from { opacity:0; transform:translateY(-35px);}
+      to { opacity:1; transform:none;}
+    }
+    .request-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem;
+    }
+    .request-header .icon {
+      font-size: 2.1rem;
+      color: #0984e3;
+      background: #e8f0fc;
+      border-radius: 50%;
+      padding: .8rem;
+      box-shadow: 0 2px 12px #0984e314;
+    }
+    .stepper {
+      display: flex; align-items: center; gap: 10px; justify-content: center;
+      margin-bottom: 1.7rem;
+    }
+    .step-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #e8f0fc; color: #0984e3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem; font-weight: 600;
+      border: 2px solid #e8f0fc; transition: all .19s;
+    }
+    .step-dot.active {
+      background: #0984e3; color: #fff; border-color: #0984e3;
+      box-shadow: 0 2px 10px #0984e322;
+    }
+    .step-line {
+      width: 28px; height: 3px; background: #e8f0fc; border-radius: 8px;
+    }
+    .request-title {
+      font-size: 1.35rem; font-weight: 700; color: #0984e3; margin-bottom: 2px;
+    }
+    .request-desc {
+      font-size: 1.02rem; color: #4a5d7a; margin-bottom: .8rem;
+    }
+    .form-label {
+      font-weight: 500; color: #1e293b; margin-bottom: 3px;
+    }
+    .form-control, select {
+      border-radius: .7rem!important;
+      border: 1.4px solid #d7dee9!important;
+      font-size: 1.06rem;
+      box-shadow: none!important;
+      transition: border .19s;
+      background: #f9fafb;
+    }
+    .form-control:focus, select:focus {
+      border-color: #0984e3!important;
+      background: #f4f8fd;
+      box-shadow: 0 2px 10px #0984e322!important;
+    }
+    .is-invalid {
+      border-color: #e74c3c!important;
+      background: #fff5f5!important;
+    }
+    .invalid-feedback {
+      color: #e74c3c;
+      font-size: .99rem;
+      margin-top: .2rem;
+      margin-bottom: .6rem;
+    }
+    .btn-primary {
+      background: #0984e3;
+      border-radius: 2rem;
+      font-weight: 600;
+      border: none;
+      font-size: 1.07rem;
+      padding: 0.67rem 0;
+      box-shadow: 0 2px 8px #0984e322;
+      transition: background .16s;
+    }
+    .btn-primary:hover {
+      background: #0466b9;
+    }
+    .btn-secondary {
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 1.07rem;
+    }
+    .toast {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      min-width: 230px;
+      z-index: 9999;
+      box-shadow: 0 4px 18px #222a3630;
+      border-radius: .8rem;
+      font-size: 1.08rem;
+      font-weight: 500;
+    }
+    @media (max-width: 650px) {
+      .request-card { padding: 1rem .6rem;}
+      .request-header .icon { font-size: 1.45rem; padding: .45rem;}
+      .request-title { font-size: 1.08rem;}
+    }
+  </style>
+</head>
+<body>
+{% if messages %}
+  <div class="toast align-items-center text-bg-success border-0 show" role="alert" id="toastFeedback">
+    <div class="d-flex">
+      <div class="toast-body">
+        {% for message in messages %}{{ message }}{% endfor %}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+{% endif %}
+<div class="request-card shadow">
+  <div class="request-header">
+    <span class="icon"><i class="fas fa-plus-circle"></i></span>
+    <div>
+      <div class="request-title">Nouvelle demande d'article</div>
+      <div class="request-desc">Remplissez ce formulaire pour faire votre demande auprès du gestionnaire.</div>
+    </div>
+  </div>
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-dot active">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot">3</div>
+  </div>
+  <form method="post" id="demandeForm" novalidate autocomplete="off">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label" for="id_article">Article demandé</label>
+      {{ form.article }}
+      {% if form.article.errors %}
+        <div class="invalid-feedback d-block">{{ form.article.errors|join:", " }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="id_quantite">Quantité</label>
+      {{ form.quantite }}
+      {% if form.quantite.errors %}
+        <div class="invalid-feedback d-block">{{ form.quantite.errors|join:", " }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="id_remarque">Remarque <span class="text-secondary small">(optionnel)</span></label>
+      {{ form.remarque }}
+    </div>
+    <button type="submit" class="btn btn-primary w-100" id="btnEnvoyer">
+      <i class="fas fa-paper-plane me-1"></i> Envoyer la demande
+    </button>
+    <a href="{% url 'dashboard_employe' %}" class="btn btn-secondary w-100 mt-2">
+      <i class="fas fa-chevron-left me-1"></i> Annuler
+    </a>
+  </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Toast auto-close
+  const toast = document.getElementById('toastFeedback');
+  if (toast) {
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3400);
+  }
+
+  // Front validation avancée
+  const form = document.getElementById('demandeForm');
+  if(form){
+    form.addEventListener('submit', function(e){
+      let valid = true;
+      // Vérification quantité (doit être > 0)
+      const quantite = document.getElementById('id_quantite');
+      if(quantite && (isNaN(quantite.value) || parseInt(quantite.value) < 1)){
+        quantite.classList.add('is-invalid');
+        if(!quantite.nextElementSibling || !quantite.nextElementSibling.classList.contains('invalid-feedback')){
+          const err = document.createElement('div');
+          err.className = 'invalid-feedback d-block';
+          err.textContent = "Veuillez entrer une quantité valide (>0).";
+          quantite.parentNode.appendChild(err);
+        }
+        valid = false;
+      } else if(quantite) {
+        quantite.classList.remove('is-invalid');
+        // Nettoyer le message si existant
+        if(quantite.nextElementSibling && quantite.nextElementSibling.classList.contains('invalid-feedback')){
+          quantite.nextElementSibling.remove();
+        }
+      }
+      // Vérification article sélectionné
+      const article = document.getElementById('id_article');
+      if(article && !article.value){
+        article.classList.add('is-invalid');
+        if(!article.nextElementSibling || !article.nextElementSibling.classList.contains('invalid-feedback')){
+          const err = document.createElement('div');
+          err.className = 'invalid-feedback d-block';
+          err.textContent = "Veuillez sélectionner un article.";
+          article.parentNode.appendChild(err);
+        }
+        valid = false;
+      } else if(article) {
+        article.classList.remove('is-invalid');
+        if(article.nextElementSibling && article.nextElementSibling.classList.contains('invalid-feedback')){
+          article.nextElementSibling.remove();
+        }
+      }
+      if(!valid) e.preventDefault();
+    });
+  }
+</script>
+</body>
+</html>

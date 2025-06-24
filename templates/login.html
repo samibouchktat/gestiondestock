@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion – Gestion de Stock{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 450px;">
+  <div class="text-center logo mb-3">
+    <i class="fas fa-box-open"></i> <strong style="color:#0093e9">Gestion</strong><span style="color:#22d47d">Stock</span>
+  </div>
+  <h4 class="text-center mb-2" style="color:#181c2e;">Bienvenue !</h4>
+  <p class="text-center mb-4" style="color:#4b5563">Connectez-vous à votre tableau de bord.</p>
+
+  <form method="POST" novalidate autocomplete="off">
+    {% csrf_token %}
+
+    <label for="username" class="form-label"><i class="fas fa-user me-2"></i>Nom d'utilisateur</label>
+    <input type="text" name="username" id="username" class="form-control" placeholder="Entrez votre nom" required autofocus>
+
+    <label for="password" class="form-label"><i class="fas fa-lock me-2"></i>Mot de passe</label>
+    <div class="password-container position-relative">
+      <input type="password" name="password" id="password" class="form-control" placeholder="Mot de passe" required>
+      <i class="fas fa-eye eye-icon position-absolute" id="toggle-password" style="top:52%; right:15px; transform:translateY(-50%); cursor:pointer;"></i>
+    </div>
+
+    <label for="role" class="form-label mt-3"><i class="fas fa-user-tag me-2"></i>Rôle</label>
+    <select name="role" id="role" class="form-select" required>
+      <option value="">-- Sélectionnez votre rôle --</option>
+      <option value="employe">Employé</option>
+      <option value="gestionnaire">Gestionnaire de stock</option>
+      <option value="admin">Admin</option>
+      <option value="fournisseur">fournisseur</option>
+    </select>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-danger text-center mt-3">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <button type="submit" class="btn btn-login mt-4 w-100">Se connecter</button>
+  </form>
+
+  <div class="footer-links text-center mt-4">
+    <p>Pas de compte ? Contactez l'administrateur.</p>
+    <a href="#">Mot de passe oublié ?</a>
+  </div>
+</div>
+
+<script>
+  function togglePasswordVisibility() {
+    const passwordInput = document.getElementById("password");
+    const eyeIcon = document.getElementById("toggle-password");
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      eyeIcon.classList.remove("fa-eye");
+      eyeIcon.classList.add("fa-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      eyeIcon.classList.remove("fa-eye-slash");
+      eyeIcon.classList.add("fa-eye");
+    }
+  }
+</script>
+{% endblock %}

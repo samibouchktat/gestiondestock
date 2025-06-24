@@ -1,0 +1,96 @@
+{# templates/gestionnaire_base.html #}
+{% extends 'basee.html' %}
+{% load static %}
+
+{# Page title, shown in <title>… </title> #}
+{% block title %}Tableau de bord – Gestionnaire{% endblock %}
+
+{# Sidebar menu #}
+{% block sidebar %}
+<aside class="sidebar">
+  <div class="sidebar-title">
+    <i class="fas fa-warehouse"></i>
+    <span>Gestion<br>Stock</span>
+  </div>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="{% url 'dashboard_gestionnaire' %}"
+         class="{% if request.resolver_match.url_name == 'dashboard_gestionnaire' %}active{% endif %}">
+        <i class="fas fa-home"></i> Accueil
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'product_list' %}"
+         class="{% if request.resolver_match.url_name == 'product_list' %}active{% endif %}">
+        <i class="fas fa-box-open"></i> Produits
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'commande_list' %}"
+         class="{% if request.resolver_match.url_name == 'commande_list' %}active{% endif %}">
+        <i class="fas fa-shopping-cart"></i> Commandes
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'fournisseur_list' %}"
+         class="{% if request.resolver_match.url_name == 'fournisseur_list' %}active{% endif %}">
+        <i class="fas fa-truck"></i> Fournisseurs
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'nouvelle_entree' %}"
+         class="{% if request.resolver_match.url_name == 'nouvelle_entree' %}active{% endif %}">
+        <i class="fas fa-arrow-down"></i> Entrée de stock
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'nouvelle_sortie' %}"
+         class="{% if request.resolver_match.url_name == 'nouvelle_sortie' %}active{% endif %}">
+        <i class="fas fa-arrow-up"></i> Sortie de stock
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'liste_demandes' %}"
+         class="{% if request.resolver_match.url_name == 'liste_demandes' %}active{% endif %}">
+        <i class="fas fa-clipboard-list"></i> Demandes employés
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'report_ai' %}"
+         class="{% if request.resolver_match.url_name == 'report_ai' %}active{% endif %}">
+        <i class="fas fa-chart-line"></i> Rapports
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'statistique' %}"
+         class="{% if request.resolver_match.url_name == 'statistique' %}active{% endif %}">
+        <i class="fas fa-chart-bar"></i> Statistiques
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'msg' %}"
+         class="{% if request.resolver_match.url_name == 'msg' or request.resolver_match.url_name == 'conv' %}active{% endif %}">
+        <i class="fas fa-envelope-open-text"></i> Messages
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'complete_profile' %}"
+         class="{% if request.resolver_match.url_name == 'complete_profile' %}active{% endif %}">
+        <i class="fas fa-user-shield"></i> Email 2FA
+      </a>
+    </li>
+  </ul>
+  <div class="sidebar-footer">
+    <a href="{% url 'log_out' %}" class="btn">
+      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </a>
+  </div>
+</aside>
+{% endblock %}
+
+{# Main content area where each page injects its own content #}
+{% block content %}
+<main class="main-content">
+  {% block page_content %}{% endblock %}
+</main>
+{% endblock %}

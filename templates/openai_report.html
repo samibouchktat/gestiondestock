@@ -1,0 +1,43 @@
+
+{% block content %}
+<div class="container my-5">
+  <h1 class="mb-4">Génération de rapport IA</h1>
+
+  {# ─── Formulaire de génération ──────────────────────── #}
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-robot me-2"></i>Générer le rapport
+    </button>
+  </form>
+
+  {# ─── Affichage d’une erreur éventuelle ─────────────── #}
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  {# ─── Toujours afficher le résumé ───────────────────── #}
+  <h2 class="h4">Résumé des mouvements de stock</h2>
+  <ul class="list-group mb-4">
+    {% for line in data_summary %}
+      <li class="list-group-item">{{ line }}</li>
+    {% endfor %}
+  </ul>
+
+  {# ─── Si on a généré un rapport, on l’affiche ──────── #}
+  {% if sections %}
+    <h2 class="h4">Rapport généré</h2>
+    {% for sec in sections %}
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          {{ sec|linebreaks }}
+        </div>
+      </div>
+    {% endfor %}
+  {% elif not error %}
+    <div class="alert alert-info">
+      Cliquez sur « Générer le rapport » pour lancer l’appel à OpenAI.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

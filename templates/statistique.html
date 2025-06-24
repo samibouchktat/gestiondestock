@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiques – Gestionnaire</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container my-5">
+    <h1 class="mb-4"><i class="fas fa-chart-bar"></i> Statistiques de Stock</h1>
+    <div class="row g-4">
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Articles par Catégorie</h5>
+            <canvas id="chartCat"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Top 10 Articles en Stock</h5>
+            <canvas id="chartTopArticles"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Mouvements de Stock (7 jours)</h5>
+            <canvas id="chartMvts"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Commandes par Fournisseur</h5>
+            <canvas id="chartFourn"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-danger">Articles en rupture</h5>
+            <div id="ruptureList"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <a href="{% url 'dashboard_gestionnaire' %}" class="btn btn-secondary mt-4">Retour au tableau de bord</a>
+  </div>
+
+  <!-- Chart.js JS dynamique -->
+  <script>
+    // Articles par catégorie
+    fetch("{% url 'stats_articles_par_categorie' %}")
+      .then(r => r.json())
+      .then(data => {
+        new Chart(document.getElementById('chartCat'), {
+          type: 'pie',
+          data: { labels: data.labels, datasets: [{ data: data.data }] }
+        });
+      });
+
+    // Top 10 articles
+    fetch("{% url 'stats_top_articles' %}")
+      .then(r => r.json())
+      .then(data => {
+        new Chart(document.getElementById('chartTopArticles'), {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: [{ label: 'Quantité', data: data.data, backgroundColor: 'rgba(0,123,255,0.7)' }]
+          }
+        });
+      });
+
+    // Mouvements de stock (7 jours)
+    fetch("{% url 'stats_mouvements_stock' %}?jours=7")
+      .then(r => r.json())
+      .then(data => {
+        new Chart(document.getElementById('chartMvts'), {
+          type: 'line',
+          data: {
+            labels: data.labels,
+            datasets: [
+              { label: 'Entrées', data: data.entrees, borderColor: 'green', fill: false },
+              { label: 'Sorties', data: data.sorties, borderColor: 'red', fill: false }
+            ]
+          }
+        });
+      });
+
+    // Commandes par fournisseur
+    fetch("{% url 'stats_commandes_par_fournisseur' %}")
+      .then(r => r.json())
+      .then(data => {
+        new Chart(document.getElementById('chartFourn'), {
+          type: 'bar',
+          data: { labels: data.labels, datasets: [{ label: "Nb commandes", data: data.data }] }
+        });
+      });
+
+    // Articles en rupture
+    fetch("{% url 'stats_articles_rupture' %}")
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById('ruptureList');
+        list.innerHTML = data.labels.length
+          ? data.labels.map(nom => `<span class="badge bg-danger me-2">${nom}</span>`).join(' ')
+          : "<span class='text-success'>Aucun article en rupture.</span>";
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmer la suppression</title>
+</head>
+<body>
+    <h1>Êtes-vous sûr de vouloir supprimer cet article ?</h1>
+    <p>Nom de l'article : {{ article.name }}</p>  <!-- Affiche le nom de l'article -->
+    
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Confirmer la suppression</button>
+    </form>
+    <a href="{% url 'product_list' %}">Annuler</a>
+</body>
+</html>
