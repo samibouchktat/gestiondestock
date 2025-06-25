@@ -4,311 +4,586 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Espace Employé | Gestion de Stock</title>
+  <title>GestionStock Pro | Espace Employé</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --main-bg: #f4f6fb;
-      --sidebar-bg: linear-gradient(150deg, #202833 75%, #0984e3 170%);
-      --card-bg: rgba(255,255,255,0.98);
-      --card-shadow: 0 10px 32px 0 rgba(52, 87, 179, 0.07);
-      --primary: #0984e3;
-      --primary-light: #e8f0fc;
-      --dark: #23272f;
-      --border: #d7dee9;
-      --secondary: #20c997;
-      --notif: #ffbe76;
-    }
-    body {
-      background: var(--main-bg);
-      color: var(--dark);
-      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-      min-height: 100vh;
-      background-image:
-        radial-gradient(circle at 80% 20%, #e8f0fc 0%, transparent 60%),
-        radial-gradient(circle at 10% 80%, #e8f0fc 0%, transparent 75%),
-        linear-gradient(130deg, #f4f6fb 70%, #e8f0fc 100%);
-      background-attachment: fixed;
-      overflow-x: hidden;
-      animation: bg-move 16s ease-in-out infinite alternate;
-    }
-    @keyframes bg-move {
-      0% { background-position: 80% 20%, 10% 80%; }
-      50% { background-position: 85% 15%, 15% 85%; }
-      100% { background-position: 80% 20%, 10% 80%; }
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #3b82f6;
+      --primary-lighter: #60a5fa;
+      --primary-lightest: #93c5fd;
+      --success: #059669;
+      --success-light: #34d399;
+      --danger: #dc2626;
+      --danger-light: #ef4444;
+      --warning: #d97706;
+      --warning-light: #fbbf24;
+      --info: #0891b2;
+      --info-light: #22d3ee;
+      --dark: #111827;
+      --dark-light: #1f2937;
+      --gray: #6b7280;
+      --gray-light: #9ca3af;
+      --gray-lighter: #d1d5db;
+      --white: #ffffff;
+      --bg-sidebar: #0f172a;
+      --bg-main: #f8fafc;
     }
 
-    /* --- SIDEBAR --- */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Modern Glassmorphism Sidebar */
     .sidebar {
       position: fixed;
-      top: 0; left: 0; bottom: 0; width: 240px;
-      background: var(--sidebar-bg);
-      color: #fff;
-      display: flex; flex-direction: column; justify-content: space-between;
-      z-index: 100;
-      box-shadow: 2px 0 20px #23272f16;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      transition: all 0.3s ease;
     }
+
     .sidebar-logo {
-      font-size: 1.4rem; font-weight: 700; letter-spacing: 1.2px;
-      padding: 2rem 0 1.3rem 2.2rem; display: flex; align-items: center; gap: 0.75rem;
-      color: #fff;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: linear-gradient(to right, rgba(37, 99, 235, 0.1), transparent);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .sidebar-profile { display: flex; align-items: center; gap: .75rem; padding: 0.4rem 0 1.3rem 2.2rem; }
-    .sidebar .avatar {
-      width: 45px; height: 45px; border-radius: 50%; background: #fff;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--primary); font-size: 1.3rem; border: 2px solid #0984e344;
-      box-shadow: 0 2px 9px #23272f10;
+
+    .sidebar-logo i {
+      font-size: 1.5rem;
+      color: var(--primary-lighter);
     }
-    .sidebar-links { flex: 1 1 auto; padding: .3rem 0 1rem 0; }
-    .sidebar-links a {
-      display: flex; align-items: center; gap: 1rem;
-      padding: 13px 2.2rem 13px 2.2rem;
-      color: #d7dee9; font-weight: 500; border-left: 4px solid transparent;
-      font-size: 1.07em; transition: background .14s, color .13s, border .18s;
-      position: relative; overflow: hidden;
+
+    .sidebar-logo span {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.5px;
     }
-    .sidebar-links a.active, .sidebar-links a:hover {
-      background: #0984e315;
-      color: #fff;
-      border-left: 4px solid var(--primary);
+
+    .sidebar-profile {
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary-light), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-name {
+      color: var(--white);
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .profile-role {
+      color: var(--gray-light);
+      font-size: 0.9rem;
+    }
+
+    .sidebar-nav {
+      padding: 1.5rem 0;
+    }
+
+    .nav-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-section-title {
+      color: var(--gray-light);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.75rem 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.875rem 2rem;
+      color: var(--gray-light);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
       text-decoration: none;
     }
-    .sidebar .logout-btn {
-      background: #fff; color: var(--primary); font-weight: 600;
-      margin: 1.1rem 1.5rem 2.2rem 1.5rem; padding: 10px 0;
-      border-radius: 22px; border: 1.2px solid var(--border); font-size: 1.1rem;
-      box-shadow: 0 2px 12px #0984e31a; transition: background 0.17s, color 0.17s;
-      width: 80%; align-self: center;
-      display: flex; align-items: center; justify-content: center; gap: .7em;
-      position: relative; overflow: hidden;
-    }
-    .sidebar .logout-btn:hover { background: var(--primary); color: #fff; }
 
-    /* --- MAIN CONTENT --- */
-    .main-content { margin-left: 240px; padding: 0 2vw; min-height: 100vh; }
-    .dashboard-header {
-      background: var(--card-bg); border-radius: 1.25rem; box-shadow: var(--card-shadow);
-      padding: 2.3rem 2rem 1.7rem 2rem; margin-top: 40px; margin-bottom: 40px;
-      text-align: center; position: relative;
-      animation: fade-down 0.7s cubic-bezier(.17,.85,.6,1.25) both;
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--white);
+      background: rgba(37, 99, 235, 0.1);
     }
-    @keyframes fade-down {
-      from { opacity: 0; transform: translateY(-30px);}
-      to { opacity: 1; transform: none;}
+
+    .nav-link.active {
+      background: linear-gradient(to right, var(--primary), transparent);
+      border-right: 3px solid var(--primary-lighter);
     }
-    .dashboard-header h1 {
-      font-weight: 800; font-size: 2.25rem; color: var(--primary); margin-bottom: 0.7rem;
-      letter-spacing: .8px; display: flex; align-items: center; justify-content: center; gap: 12px;
+
+    .nav-link i {
+      width: 1.5rem;
+      font-size: 1.1rem;
+      margin-right: 1rem;
+      color: var(--primary-lighter);
     }
-    .dashboard-header h1 i { color: var(--primary);}
-    .dashboard-header p { color: #4b5361; font-size: 1.14rem; font-weight: 500; margin-bottom: 0.3rem;}
-    .dashboard-header .subtitle { color: var(--primary); font-weight: bold; font-size: 1.13rem; margin-top: .7rem; letter-spacing: .4px; }
-    .dashboard-actions {
-      display: flex; flex-wrap: wrap; gap: 2.1rem; justify-content: center; align-items: stretch; margin-top: 15px;
+
+    .nav-badge {
+      background: var(--danger);
+      color: var(--white);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      margin-left: auto;
     }
-    /* Animations entrée cards */
-    .action-card {
-      background: var(--card-bg);
-      border-radius: 1.2rem;
-      box-shadow: var(--card-shadow);
-      min-width: 240px; max-width: 320px; flex: 1 1 270px;
-      padding: 2.1rem 1.1rem 1.4rem 1.1rem;
-      display: flex; flex-direction: column; align-items: center;
-      border: 1.4px solid var(--border);
-      position: relative; margin-bottom: 1.5rem; opacity: 0;
-      transform: translateY(32px) scale(.97);
-      animation: slide-up-fade .7s cubic-bezier(.29,1.12,.72,1.02) forwards;
+
+    /* Main Content Area */
+    .main-content {
+      margin-left: 280px;
+      padding: 2rem;
+      min-height: 100vh;
     }
-    .dashboard-actions .action-card:nth-child(1) { animation-delay: .1s; }
-    .dashboard-actions .action-card:nth-child(2) { animation-delay: .3s; }
-    .dashboard-actions .action-card:nth-child(3) { animation-delay: .5s; }
-    .dashboard-actions .action-card:nth-child(4) { animation-delay: .7s; }
-    .dashboard-actions .action-card:nth-child(5) { animation-delay: .9s; }
-    @keyframes slide-up-fade {
-      from { opacity: 0; transform: translateY(32px) scale(.97);}
-      to { opacity: 1; transform: none;}
+
+    /* Welcome Section */
+    .welcome-section {
+      background: var(--white);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
     }
-    .action-card:hover {
-      box-shadow: 0 16px 44px 6px #0984e322;
-      border: 1.5px solid var(--primary);
-      transform: translateY(-6px) scale(1.04);
-      transition: box-shadow .23s, border .19s, transform .17s;
+
+    .welcome-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
+      border-radius: 50%;
+      transform: translate(150px, -150px);
+      z-index: 0;
     }
-    .action-icon {
-      font-size: 2.45rem; margin-bottom: 1.10rem;
-      color: var(--primary); background: var(--primary-light);
-      border-radius: 50%; padding: 22px;
-      box-shadow: 0 2px 10px #0984e311;
-      transition: background 0.2s, color 0.2s;
+
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 1rem;
       position: relative;
     }
-    .action-card h5 { font-weight: 700; margin-bottom: 10px; color: var(--primary);}
-    .action-card p { color: #4b5361; font-size: 1.05rem; min-height: 38px; margin-bottom: 17px; text-align: center;}
-    /* Ripple effet sur boutons */
-    .btn-action-main, .btn-action-secondary {
-      position: relative; overflow: hidden;
-      outline: none; cursor: pointer; user-select: none;
-      z-index: 1;
-      transition: background .13s, color .15s, border .15s;
+
+    .welcome-subtitle {
+      color: var(--gray);
+      font-size: 1.1rem;
+      max-width: 600px;
+      position: relative;
     }
-    .btn-action-main {
-      background: var(--primary); color: #fff; font-weight: 600;
-      border-radius: 28px; padding: 0.7rem 2rem; font-size: 1.02rem; margin-bottom: 0.3rem; border: none;
-      box-shadow: 0 2px 8px #0984e325;
+
+    /* Action Cards */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .btn-action-main:hover {
-      background: #fff; color: var(--primary); border: 1.5px solid var(--primary);
+
+    .action-card {
+      background: var(--white);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
-    .btn-action-secondary {
-      background: var(--primary-light); color: var(--dark); border: 1.3px solid var(--border); font-weight: 600;
-      border-radius: 28px; padding: 0.67rem 2rem; font-size: 1rem; margin-bottom: 0.2rem;
+
+    .action-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
-    .btn-action-secondary:hover {
-      background: var(--primary); color: #fff; border: 1.3px solid var(--primary);
-    }
-    .btn-action-main .ripple, .btn-action-secondary .ripple {
+
+    .action-card::before {
+      content: '';
       position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
       border-radius: 50%;
-      transform: scale(0);
-      animation: ripple 0.6s linear;
-      background-color: #0984e333;
-      opacity: .65;
-      pointer-events: none;
-      z-index: 2;
+      transform: translate(50px, -50px);
+      z-index: 0;
     }
-    @keyframes ripple {
-      to { transform: scale(4); opacity: 0; }
+
+    .action-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 1rem;
+      background: var(--primary-lighter);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      transition: all 0.3s ease;
     }
-    .profile-badge {
-      position: absolute; top: -23px; right: 20px;
-      background: #e8f0fc; color: var(--primary); border-radius: 11px; font-size: 0.91rem; font-weight: 600;
-      padding: 4px 13px; box-shadow: 0 1px 6px #0984e317; border: 1px solid var(--border); letter-spacing: 0.5px;
+
+    .action-card:hover .action-icon {
+      background: var(--primary);
+      color: var(--white);
+      transform: scale(1.1);
     }
-    .notif-badge {
-      background: var(--notif); color: #23272f; border-radius: 13px; font-size: 0.99rem; font-weight: bold;
-      padding: 3px 12px; margin-left: 7px; box-shadow: 0 1px 8px #ffd79a; border: 1px solid #ffd79a; vertical-align: middle;
+
+    .action-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.75rem;
+      position: relative;
     }
-    footer {
-      background: #fff; color: #7b8390; text-align: center; padding: 1.1rem 0 0.8rem 0; font-size: 1.10rem;
-      border-top-left-radius: 1.3rem; border-top-right-radius: 1.3rem;
-      box-shadow: 0 -2px 18px #0984e312; margin-top: 3rem;
+
+    .action-description {
+      color: var(--gray);
+      margin-bottom: 1.5rem;
+      position: relative;
     }
-    /* Responsive */
-    @media (max-width: 1000px) { .main-content { margin-left: 0; padding-left: 12px; padding-right: 12px;} .sidebar { display: none; } }
-    @media (max-width: 700px) {
-      .dashboard-header { padding: 1.2rem 0.3rem 1rem 0.3rem; }
-      .action-card { min-width: 170px; }
-      .dashboard-header h1 { font-size: 1.18rem; }
+
+    /* Buttons */
+    .btn-action {
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
+
+    .btn-primary-action {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-primary-action:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+      color: var(--white);
+    }
+
+    .btn-secondary-action {
+      background: var(--primary-lighter);
+      color: var(--primary);
+      border: none;
+    }
+
+    .btn-secondary-action:hover {
+      background: var(--primary);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+
+    .btn-danger-action {
+      background: var(--danger-light);
+      color: var(--white);
+      border: none;
+    }
+
+    .btn-danger-action:hover {
+      background: var(--danger);
+      transform: translateY(-2px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .welcome-section {
+        padding: 1.5rem;
+      }
+
+      .welcome-title {
+        font-size: 1.5rem;
+      }
+
+      .action-card {
+        padding: 1.5rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-section {
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .action-card {
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    .action-card:nth-child(1) { animation-delay: 0.1s; }
+    .action-card:nth-child(2) { animation-delay: 0.2s; }
+    .action-card:nth-child(3) { animation-delay: 0.3s; }
+    .action-card:nth-child(4) { animation-delay: 0.4s; }
+    .action-card:nth-child(5) { animation-delay: 0.5s; }
   </style>
 </head>
 <body>
-<!-- Sidebar -->
-<div class="sidebar d-none d-md-flex flex-column">
-  <div>
-    <div class="sidebar-logo"><i class="fas fa-warehouse"></i> GestionStock</div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <i class="fas fa-warehouse"></i>
+      <span>GestionStock</span>
+    </div>
+    
     <div class="sidebar-profile">
-      <span class="avatar"><i class="fas fa-user"></i></span>
-      <span><strong>{{ request.user.first_name|default:"Employé" }}</strong></span>
+      <div class="avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">{{ request.user.first_name|default:"Employé" }}</div>
+        <div class="profile-role">Espace personnel</div>
+      </div>
     </div>
-    <div class="sidebar-links">
-      <a href="#" class="active"><i class="fas fa-home"></i> Accueil</a>
-      <a href="{% url 'product_list' %}"><i class="fas fa-boxes-stacked"></i> Articles</a>
-      <a href="{% url 'faire_demande' %}"><i class="fas fa-plus-circle"></i> Faire une demande</a>
-      <a href="{% url 'mes_demandes' %}">
-        <i class="fas fa-folder-open"></i> Mes demandes
-        {% if nb_demandes_en_attente and nb_demandes_en_attente > 0 %}
-          <span class="notif-badge">{{ nb_demandes_en_attente }}</span>
-        {% endif %}
-      </a>
-      <a href="{% url 'msg' %}"><i class="fas fa-envelope"></i> Messages</a>
-      <a href="{% url 'complete_profile' %}"><i class="fas fa-user-cog"></i> Profil</a>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="#" class="nav-link active">
+          <i class="fas fa-home"></i>
+          <span>Tableau de bord</span>
+        </a>
+        <a href="{% url 'product_list' %}" class="nav-link">
+          <i class="fas fa-boxes-stacked"></i>
+          <span>Articles</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Demandes</div>
+        <a href="{% url 'faire_demande' %}" class="nav-link">
+          <i class="fas fa-plus-circle"></i>
+          <span>Nouvelle demande</span>
+        </a>
+        <a href="{% url 'mes_demandes' %}" class="nav-link">
+          <i class="fas fa-folder-open"></i>
+          <span>Mes demandes</span>
+          {% if nb_demandes_en_attente and nb_demandes_en_attente > 0 %}
+            <span class="nav-badge">{{ nb_demandes_en_attente }}</span>
+          {% endif %}
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Communication</div>
+        <a href="{% url 'msg' %}" class="nav-link">
+          <i class="fas fa-envelope"></i>
+          <span>Messages</span>
+        </a>
+        <a href="{% url 'complete_profile' %}" class="nav-link">
+          <i class="fas fa-user-cog"></i>
+          <span>Mon profil</span>
+        </a>
+      </div>
+    </nav>
+
+    <form method="post" action="{% url 'log_out' %}" class="px-4 mt-auto mb-4">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger-action w-100">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Déconnexion</span>
+      </button>
+    </form>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <h1 class="welcome-title">
+        <i class="fas fa-user-tie me-3"></i>
+        Bienvenue, {{ request.user.first_name|default:"Employé" }}
+      </h1>
+      <p class="welcome-subtitle">
+        Gérez efficacement vos demandes d'articles et accédez à toutes vos fonctionnalités depuis votre espace personnel.
+      </p>
+    </section>
+
+    <!-- Action Cards -->
+    <div class="action-grid">
+      <!-- Articles -->
+      <div class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-boxes-stacked"></i>
+        </div>
+        <h3 class="action-title">Catalogue Articles</h3>
+        <p class="action-description">
+          Accédez à l'inventaire complet et consultez la disponibilité en temps réel de tous les articles.
+        </p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary-action">
+          <i class="fas fa-eye"></i>
+          <span>Consulter le catalogue</span>
+        </a>
+      </div>
+
+      <!-- Nouvelle demande -->
+      <div class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-plus-circle"></i>
+        </div>
+        <h3 class="action-title">Nouvelle Demande</h3>
+        <p class="action-description">
+          Créez une nouvelle demande d'articles auprès de votre gestionnaire de stock.
+        </p>
+        <a href="{% url 'faire_demande' %}" class="btn btn-primary-action">
+          <i class="fas fa-paper-plane"></i>
+          <span>Créer une demande</span>
+        </a>
+      </div>
+
+      <!-- Suivi demandes -->
+      <div class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-folder-open"></i>
+        </div>
+        <h3 class="action-title">Suivi des Demandes</h3>
+        <p class="action-description">
+          Suivez l'état de vos demandes en cours et consultez l'historique complet.
+        </p>
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'mes_demandes' %}" class="btn btn-primary-action">
+            <i class="fas fa-list"></i>
+            <span>Voir mes demandes</span>
+          </a>
+          {% if nb_demandes_en_attente and nb_demandes_en_attente > 0 %}
+            <div class="alert alert-warning d-flex align-items-center mb-0">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              {{ nb_demandes_en_attente }} demande(s) en attente
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Messagerie -->
+      <div class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <h3 class="action-title">Messagerie</h3>
+        <p class="action-description">
+          Communiquez avec l'équipe et suivez vos notifications importantes.
+        </p>
+        <a href="{% url 'msg' %}" class="btn btn-secondary-action">
+          <i class="fas fa-envelope-open-text"></i>
+          <span>Accéder à la messagerie</span>
+        </a>
+      </div>
+
+      <!-- Profil -->
+      <div class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-user-cog"></i>
+        </div>
+        <h3 class="action-title">Paramètres du Profil</h3>
+        <p class="action-description">
+          Gérez vos informations personnelles et vos préférences de compte.
+        </p>
+        <a href="{% url 'complete_profile' %}" class="btn btn-secondary-action">
+          <i class="fas fa-user-edit"></i>
+          <span>Modifier mon profil</span>
+        </a>
+      </div>
     </div>
-  </div>
-  <form method="post" action="{% url 'log_out' %}">
-    {% csrf_token %}
-    <button type="submit" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
-  </form>
-</div>
-<!-- Main Content -->
-<div class="main-content">
-  <div class="dashboard-header shadow-sm">
-    <h1>
-      <i class="fas fa-user-tie"></i>
-      Bonjour, {{ request.user.first_name|default:"Employé" }}
-    </h1>
-    <p>
-      Accédez à toutes vos fonctionnalités principales, faites vos demandes et suivez leur état en toute simplicité.<br>
-      <span class="subtitle">Espace employé professionnel GestionStock</span>
-    </p>
-  </div>
-  <div class="dashboard-actions">
-    <!-- Articles -->
-    <div class="action-card">
-      <div class="profile-badge">Stock</div>
-      <div class="action-icon"><i class="fas fa-boxes-stacked"></i></div>
-      <h5>Articles</h5>
-      <p>Consultez la liste complète des articles, quantités en temps réel et détails.</p>
-      <a href="{% url 'product_list' %}" class="btn btn-action-main ripple-btn"><i class="fas fa-eye me-1"></i> Consulter</a>
-    </div>
-    <!-- Faire une demande -->
-    <div class="action-card">
-      <div class="profile-badge">Demande</div>
-      <div class="action-icon"><i class="fas fa-plus-circle"></i></div>
-      <h5>Faire une demande</h5>
-      <p>Besoin d’un produit ? Effectuez une demande directe à votre gestionnaire.</p>
-      <a href="{% url 'faire_demande' %}" class="btn btn-action-main ripple-btn"><i class="fas fa-paper-plane me-1"></i> Demander</a>
-    </div>
-    <!-- Mes demandes -->
-    <div class="action-card">
-      <div class="profile-badge">Suivi</div>
-      <div class="action-icon"><i class="fas fa-folder-open"></i></div>
-      <h5>Mes demandes</h5>
-      <p>Consultez le suivi, l’historique et l’état de toutes vos demandes d’articles.</p>
-      <a href="{% url 'mes_demandes' %}" class="btn btn-action-main ripple-btn"><i class="fas fa-list me-1"></i> Voir</a>
-      {% if nb_demandes_en_attente and nb_demandes_en_attente > 0 %}
-        <span class="notif-badge mt-2">En attente : {{ nb_demandes_en_attente }}</span>
-      {% endif %}
-    </div>
-    <!-- Messagerie -->
-    <div class="action-card">
-      <div class="profile-badge">Interne</div>
-      <div class="action-icon"><i class="fas fa-envelope"></i></div>
-      <h5>Messagerie</h5>
-      <p>Échangez avec l’équipe ou le gestionnaire, et recevez vos notifications internes.</p>
-      <a href="{% url 'msg' %}" class="btn btn-action-secondary ripple-btn"><i class="fas fa-envelope-open-text me-1"></i> Accéder</a>
-    </div>
-    <!-- Profil -->
-    <div class="action-card">
-      <div class="profile-badge">Profil</div>
-      <div class="action-icon"><i class="fas fa-user-cog"></i></div>
-      <h5>Mon profil</h5>
-      <p>Mettez à jour vos informations personnelles et votre mot de passe facilement.</p>
-      <a href="{% url 'complete_profile' %}" class="btn btn-action-secondary ripple-btn"><i class="fas fa-user-edit me-1"></i> Modifier</a>
-    </div>
-  </div>
-</div>
-<footer>
-  <div>
-    <i class="fas fa-building"></i> 2025 Gestion de Stock — Espace Employé professionnel | Société PRO.
-  </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Ripple effet sur tous les boutons .ripple-btn
-  document.querySelectorAll('.ripple-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      const circle = document.createElement('span');
-      circle.classList.add('ripple');
-      const rect = btn.getBoundingClientRect();
-      circle.style.left = (e.clientX - rect.left) + 'px';
-      circle.style.top = (e.clientY - rect.top) + 'px';
-      btn.appendChild(circle);
-      setTimeout(() => circle.remove(), 500);
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mobile sidebar toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleButton = document.createElement('button');
+      toggleButton.className = 'btn btn-primary position-fixed d-lg-none';
+      toggleButton.style.cssText = 'top: 1rem; left: 1rem; z-index: 1100;';
+      toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+      document.body.appendChild(toggleButton);
+
+      toggleButton.addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('show');
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(e) {
+        const sidebar = document.querySelector('.sidebar');
+        const button = document.querySelector('.btn-primary.position-fixed');
+        if (!sidebar.contains(e.target) && !button.contains(e.target)) {
+          sidebar.classList.remove('show');
+        }
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>

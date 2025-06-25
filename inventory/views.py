@@ -83,48 +83,45 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        selected_role = request.POST.get("role")
 
         user = authenticate(request, username=username, password=password)
         if user is None:
-            messages.error(request, "Nom d utilisateur ou mot de passe incorrect.")
-            return redirect("login")
-
-        UserProfile.objects.get_or_create(user=user)
-        if user.role != selected_role:
-            messages.error(request, "Le rôle sélectionné ne correspond pas à votre rôle réel.")
+            messages.error(request, "Nom d’utilisateur ou mot de passe incorrect.")
             return redirect("login")
 
         login(request, user)
-       
-        if user.role == "admin":
-            return redirect("/admin/")
+
+        # Redirection automatique selon user.role
+        if user.is_superuser or user.role == "admin":
+            return redirect('/admin/')
         elif user.role == "gestionnaire":
-            return redirect("dashboard_gestionnaire")
-       # elif user.role == "fournisseur":
-        #    return redirect("dashboard_fournisseur")
-        return redirect("dashboard_employe")
+            return redirect('dashboard_gestionnaire')
+        elif user.role == "employe":
+            return redirect('dashboard_employe')
+        else:
+            messages.error(request, "Rôle utilisateur inconnu.")
+            logout(request)
+            return redirect("login")
+
     return render(request, "login.html")
 
+
+@login_required
+def redirect_dashboard(request):
+    user = request.user
+    if user.is_superuser or user.role == "admin":
+        return redirect('/admin/')
+    if user.role == "gestionnaire":
+        return redirect('dashboard_gestionnaire')
+    if user.role == "employe":
+        return redirect('dashboard_employe')
+    messages.error(request, "Rôle utilisateur inconnu.")
+    return redirect('login')
 
 @never_cache
 def log_out(request):
     logout(request)
     messages.success(request, "Vous êtes maintenant déconnecté.")
-    return redirect('login')
-
-@login_required
-def redirect_dashboard(request):
-    user = request.user
-    if user.is_superuser:
-        return redirect('/admin/')
-    if user.role == 'gestionnaire':
-        return redirect('dashboard_gestionnaire')
-    if user.role == 'employe':
-        return redirect('dashboard_employe')
-    if user.role == 'admin':
-        return redirect('dashboard_admin')
-    messages.error(request, "Rôle utilisateur inconnu.")
     return redirect('login')
 
 
@@ -654,7 +651,7 @@ def modifier_quantite(request, pk):
             form.save()  # met à jour quantite + stock via save() override
             # Après save(), on peut récupérer le user et son secondary_email
             utilisateur = request.user
-            if article.stock < article.stock_min:
+            if article.stock < 20:
                 email_dest = utilisateur.secondary_email
                 if email_dest:
                     # Composez ici le même corps / sujet que précédemment

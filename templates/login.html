@@ -1,65 +1,360 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GestionStock Pro | Connexion</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #3b82f6;
+      --primary-lighter: #60a5fa;
+      --primary-lightest: #93c5fd;
+      --success: #059669;
+      --success-light: #34d399;
+      --danger: #dc2626;
+      --danger-light: #ef4444;
+      --warning: #d97706;
+      --warning-light: #fbbf24;
+      --info: #0891b2;
+      --info-light: #22d3ee;
+      --dark: #111827;
+      --dark-light: #1f2937;
+      --gray: #6b7280;
+      --gray-light: #9ca3af;
+      --gray-lighter: #d1d5db;
+      --white: #ffffff;
+      --bg-sidebar: #0f172a;
+      --bg-main: #f8fafc;
+    }
 
-{% block title %}Connexion – Gestion de Stock{% endblock %}
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
 
-{% block content %}
-<div class="glass-card" style="max-width: 450px;">
-  <div class="text-center logo mb-3">
-    <i class="fas fa-box-open"></i> <strong style="color:#0093e9">Gestion</strong><span style="color:#22d47d">Stock</span>
-  </div>
-  <h4 class="text-center mb-2" style="color:#181c2e;">Bienvenue !</h4>
-  <p class="text-center mb-4" style="color:#4b5563">Connectez-vous à votre tableau de bord.</p>
+    .login-container {
+      width: 100%;
+      max-width: 450px;
+      background: var(--white);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.5s ease backwards;
+    }
 
-  <form method="POST" novalidate autocomplete="off">
-    {% csrf_token %}
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
+      border-radius: 50%;
+      transform: translate(150px, -150px);
+      z-index: 0;
+    }
 
-    <label for="username" class="form-label"><i class="fas fa-user me-2"></i>Nom d'utilisateur</label>
-    <input type="text" name="username" id="username" class="form-control" placeholder="Entrez votre nom" required autofocus>
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
 
-    <label for="password" class="form-label"><i class="fas fa-lock me-2"></i>Mot de passe</label>
-    <div class="password-container position-relative">
-      <input type="password" name="password" id="password" class="form-control" placeholder="Mot de passe" required>
-      <i class="fas fa-eye eye-icon position-absolute" id="toggle-password" style="top:52%; right:15px; transform:translateY(-50%); cursor:pointer;"></i>
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-logo i {
+      font-size: 2rem;
+      color: var(--primary-lighter);
+    }
+
+    .login-logo span {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+      color: var(--gray);
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      color: var(--dark);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-label i {
+      color: var(--primary);
+      width: 1.5rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      color: var(--dark);
+      background-color: var(--white);
+      border: 2px solid var(--gray-lighter);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-lighter);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      color: var(--dark);
+      background-color: var(--white);
+      border: 2px solid var(--gray-lighter);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+      border-color: var(--primary-lighter);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .password-field {
+      position: relative;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0.25rem;
+    }
+
+    .password-toggle:hover {
+      color: var(--primary);
+    }
+
+    .btn-modern {
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .btn-modern-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn-modern-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
+      color: white;
+    }
+
+    .alert {
+      background: rgba(220, 38, 38, 0.1);
+      color: var(--danger);
+      border: none;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 2rem;
+      position: relative;
+    }
+
+    .login-footer p {
+      color: var(--gray);
+      margin-bottom: 0.75rem;
+    }
+
+    .login-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .login-footer a:hover {
+      color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 1rem;
+      }
+
+      .login-container {
+        padding: 2rem;
+      }
+
+      .login-title {
+        font-size: 1.75rem;
+      }
+
+      .login-subtitle {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="fas fa-warehouse"></i>
+        <span>GestionStock Pro</span>
+      </div>
+      <h1 class="login-title">Bienvenue !</h1>
+      <p class="login-subtitle">Connectez-vous à votre espace personnel</p>
     </div>
 
-    <label for="role" class="form-label mt-3"><i class="fas fa-user-tag me-2"></i>Rôle</label>
-    <select name="role" id="role" class="form-select" required>
-      <option value="">-- Sélectionnez votre rôle --</option>
-      <option value="employe">Employé</option>
-      <option value="gestionnaire">Gestionnaire de stock</option>
-      <option value="admin">Admin</option>
-      <option value="fournisseur">fournisseur</option>
-    </select>
+    <form method="POST" novalidate autocomplete="off">
+      {% csrf_token %}
 
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-danger text-center mt-3">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
+      <div class="form-group">
+        <label for="username" class="form-label">
+          <i class="fas fa-user"></i>
+          Nom d'utilisateur
+        </label>
+        <input type="text" name="username" id="username" class="form-control" placeholder="Entrez votre nom" required autofocus>
+      </div>
 
-    <button type="submit" class="btn btn-login mt-4 w-100">Se connecter</button>
-  </form>
+      <div class="form-group">
+        <label for="password" class="form-label">
+          <i class="fas fa-lock"></i>
+          Mot de passe
+        </label>
+        <div class="password-field">
+          <input type="password" name="password" id="password" class="form-control" placeholder="Entrez votre mot de passe" required>
+          <i class="fas fa-eye password-toggle" id="toggle-password"></i>
+        </div>
+      </div>
 
-  <div class="footer-links text-center mt-4">
-    <p>Pas de compte ? Contactez l'administrateur.</p>
-    <a href="#">Mot de passe oublié ?</a>
+    <!--<div class="form-group">
+        <label for="role" class="form-label">
+          <i class="fas fa-user-tag"></i>
+          Rôle
+        </label>
+        <select name="role" id="role" class="form-select" required>
+          <option value="">Sélectionnez votre rôle</option>
+          <option value="employe">Employé</option>
+          <option value="gestionnaire">Gestionnaire de stock</option>
+          <option value="admin">Admin</option>
+          <option value="fournisseur">Fournisseur</option>
+        </select>
+      </div>-->  
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <button type="submit" class="btn btn-modern btn-modern-primary">
+        <i class="fas fa-sign-in-alt"></i>
+        Se connecter
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>Pas de compte ? Contactez l'administrateur</p>
+      <a href="#">
+        <i class="fas fa-key"></i>
+        Mot de passe oublié ?
+      </a>
+    </div>
   </div>
-</div>
 
-<script>
-  function togglePasswordVisibility() {
-    const passwordInput = document.getElementById("password");
-    const eyeIcon = document.getElementById("toggle-password");
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      eyeIcon.classList.remove("fa-eye");
-      eyeIcon.classList.add("fa-eye-slash");
-    } else {
-      passwordInput.type = "password";
-      eyeIcon.classList.remove("fa-eye-slash");
-      eyeIcon.classList.add("fa-eye");
-    }
-  }
-</script>
-{% endblock %}
+  <script>
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      const toggleIcon = this;
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+      }
+    });
+  </script>
+</body>
+</html>

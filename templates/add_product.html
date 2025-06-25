@@ -1,311 +1,552 @@
 {% load custom_filters %}
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light" id="mainHtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ajouter un Produit | Dashboard PRO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
 
-{% block content %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-<!-- Tagify CSS pour les tags -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css">
-
-<style>
-    html, body { min-height: 100vh; }
-    body {
-        background: linear-gradient(120deg, #e3f0fd 70%, #d7fbe6 100%);
-        transition: background 0.5s;
-    }
-    [data-bs-theme="dark"] body {
-        background: linear-gradient(120deg, #101e29 80%, #133330 100%) !important;
-    }
-    .text-gradient {
-        background: linear-gradient(90deg, #0d6efd, #20c997);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 700;
-    }
-    .card-form {
-        border-radius: 1.6rem;
-        background: rgba(255,255,255,0.98);
-        box-shadow: 0 14px 44px #0a26471a;
-        border: 1px solid #e3f0fd;
-        backdrop-filter: blur(3.5px);
-        transition: background .3s;
-    }
-    [data-bs-theme="dark"] .card-form {
-        background: rgba(24,34,54,0.97);
-        border: 1.5px solid #22344b;
-        color: #c4eeed;
-    }
-    label {
-        font-weight: 600;
-        color: #137c60;
-        margin-bottom: 0.6rem;
-        letter-spacing: .3px;
-        display: flex; align-items: center; gap: 0.4em; font-size: 1.08em;
-        transition: color .2s;
-    }
-    [data-bs-theme="dark"] label { color: #a3efe6; }
-    .form-control, .form-select {
-        border-radius: 0.65rem;
-        box-shadow: 0 2px 8px #0a264714;
-        font-size: 1.08em;
-        padding: 0.7em 1.15em;
-        transition: border .18s, background .18s, color .15s;
-    }
-    .form-control:focus, .form-select:focus {
-        border: 2px solid #20c997;
-        box-shadow: 0 0 0 0.18rem #20c99722;
-        background: #f5fffa;
-    }
-    [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select {
-        background: #22344b;
-        color: #e8f0fe;
-        border: 1.5px solid #2d7e72;
-    }
-    [data-bs-theme="dark"] .form-control:focus {
-        background: #18243a;
-        border: 2px solid #20c997;
-    }
-    .btn-lg {
-        border-radius: 2em;
-        padding: 0.7rem 2.3rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        font-size: 1.16em;
-        box-shadow: 0 2px 10px #20c99722;
-        transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-success.btn-lg:hover, .btn-success.btn-lg:focus {
-        background: linear-gradient(90deg, #20c997 60%, #0d6efd 100%);
-        color: #fff;
-        transform: translateY(-2px) scale(1.04);
-        box-shadow: 0 6px 20px #20c99733;
-    }
-    .btn-outline-secondary.btn-lg:hover, .btn-outline-secondary.btn-lg:focus {
-        background: #f0f9f7;
-        color: #0a2647;
-        transform: scale(1.03);
-        box-shadow: 0 4px 18px #0d6efd19;
-    }
-    [data-bs-theme="dark"] .btn-outline-secondary.btn-lg:hover {
-        background: #22344b;
-        color: #20c997;
-    }
-    .alert {
-        border-radius: 1rem;
-        font-size: 1.04em;
-        box-shadow: 0 1px 7px #0a264710;
-        padding: 1em 1.3em;
-        margin-bottom: 1em;
-    }
-    .alert ul { margin: 0; padding-left: 1.4rem; }
-    .form-label i {
-        margin-right: 6px; color: #20c997; opacity: .87;
-        animation: bounce 0.9s cubic-bezier(.28,.84,.42,1) infinite alternate;
-    }
-    @keyframes bounce {
-        0% { transform: translateY(0);}
-        100% { transform: translateY(-3px);}
-    }
-    .dark-toggle-btn {
-        background: none;
-        border: none;
-        font-size: 1.35em;
-        color: #0d6efd;
-        cursor: pointer;
-        margin-bottom: 1.7rem;
-        float: right;
-        transition: color .19s, transform .15s;
-    }
-    .dark-toggle-btn:hover { color: #20c997; transform: scale(1.12) rotate(-13deg);}
-    .form-row { display: flex; gap: 2.3rem; flex-wrap: wrap;}
-    .form-row .mb-4 { flex: 1; }
-    .tagify__input { min-width: 120px; }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script>
-    // -- Switch automatique dark/light (comme précédemment)
-    document.addEventListener('DOMContentLoaded', function() {
-        const htmlRoot = document.getElementById('mainHtml');
-        function setTheme(mode) {
-            htmlRoot.setAttribute('data-bs-theme', mode);
-            localStorage.setItem('theme', mode);
-            document.getElementById('themeToggle').innerHTML =
-                mode === 'dark'
-                  ? '<i class="fa-regular fa-sun"></i> Mode clair'
-                  : '<i class="fa-regular fa-moon"></i> Mode sombre';
-        }
-        if(localStorage.getItem('theme')) {
-            setTheme(localStorage.getItem('theme'));
-        } else if(window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-        }
-        document.getElementById('themeToggle').onclick = function() {
-            const isDark = htmlRoot.getAttribute('data-bs-theme') === 'dark';
-            setTheme(isDark ? 'light' : 'dark');
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --background: #f4f8fb;
+            --text: #0f172a;
+            --border-radius: 1.5rem;
+            --transition: all 0.3s ease;
         }
 
-        // --- Tagify sur le champ Référence (auto-completion/tag)
-        let refInput = document.querySelector('input[name="reference"]');
-        if(refInput){
-            // Suggestions côté client (pour la démo), tu peux remplacer par tes données via AJAX
-            let referenceList = [];
-            if (window.referenceSuggestions) {
-                referenceList = window.referenceSuggestions;
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--background) 0%, #eaf9f4 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: var(--transition);
+        }
+
+        .glass-header {
+            background: linear-gradient(90deg, rgba(10,38,71,0.97) 0%, rgba(32,201,151,0.95) 100%);
+            box-shadow: 0 8px 32px rgba(33,62,87,0.15);
+            border-radius: var(--border-radius);
+            padding: 2.8rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
             }
-            window.tagifyRef = new Tagify(refInput, {
-                whitelist: referenceList,
-                dropdown: { enabled: 0, maxItems: 10, classname: "tags-look", fuzzySearch: true },
-                enforceWhitelist: false,
-                editTags: false
-            });
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        // --- Auto-completion nom du produit (suggestions AJAX)
-        let nomInput = document.querySelector('input[name="nom"]');
-        if(nomInput){
-            nomInput.setAttribute("autocomplete", "off");
-            nomInput.addEventListener('input', function(){
-                let query = this.value;
-                if(query.length < 2) return;
-                $.get("{% url 'autocomplete_product_names' %}", { q: query }, function(data){
-                    let list = document.getElementById('autocomplete-list');
-                    if(!list){
-                        list = document.createElement('ul');
-                        list.id = 'autocomplete-list';
-                        list.className = "list-group position-absolute w-100";
-                        nomInput.parentNode.appendChild(list);
-                    }
-                    list.innerHTML = "";
-                    data.results.forEach(val => {
-                        let item = document.createElement('li');
-                        item.className = "list-group-item list-group-item-action";
-                        item.textContent = val;
-                        item.onclick = () => {
-                            nomInput.value = val;
-                            list.innerHTML = "";
-                        };
-                        list.appendChild(item);
-                    });
-                });
-            });
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 1rem;
         }
 
-        // --- Validation instantanée AJAX
-        $("form#addProductForm input").on("blur change", function(){
-            let field = $(this);
-            let name = field.attr("name");
-            let value = field.val();
-            let formData = {};
-            formData[name] = value;
-            $.ajax({
-                url: "{% url 'validate_product_field' %}",
-                method: "POST",
-                data: formData,
-                headers: {'X-CSRFToken': '{{ csrf_token }}'},
-                success: function(data){
-                    if(data.error){
-                        field.addClass("is-invalid");
-                        field.next(".invalid-feedback").remove();
-                        field.after('<div class="invalid-feedback d-block">'+data.error+'</div>');
-                    } else {
-                        field.removeClass("is-invalid");
-                        field.next(".invalid-feedback").remove();
-                    }
-                }
-            });
-        });
-    });
+        .card-form {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px rgba(37,99,235,0.1);
+            overflow: hidden;
+            transition: var(--transition);
+            animation: fadeInUp 0.6s ease-out;
+        }
 
-    // --- Notifications dynamiques
-    function showNotif(message, type="success"){
-        let notif = document.createElement('div');
-        notif.className = "alert alert-"+type+" position-fixed top-0 end-0 m-4 shadow-lg animate__animated animate__fadeInRight";
-        notif.style.zIndex = 9999;
-        notif.innerHTML = message;
-        document.body.appendChild(notif);
-        setTimeout(()=> notif.remove(), 4000);
-    }
-</script>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-<div class="container py-5">
-<!-- Inject reference_suggestions as JSON for JS usage -->
-{% if reference_suggestions %}
-<script id="reference-suggestions-data" type="application/json">
-    {{ reference_suggestions|json_script:"referenceSuggestions" }}
-</script>
-<script>
-    window.referenceSuggestions = JSON.parse(document.getElementById('referenceSuggestions').textContent);
-</script>
-{% endif %}
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-<div class="container py-5">
-        <i class="fa-regular fa-moon"></i> Mode sombre
+        .form-label i {
+            color: var(--success);
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover .form-label i {
+            transform: translateY(-3px);
+        }
+
+        .form-control, .form-select {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid rgba(37,99,235,0.1);
+            border-radius: 1rem;
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            backdrop-filter: blur(4px);
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: white;
+            border-color: var(--success);
+            box-shadow: 0 4px 20px rgba(37,99,235,0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            border-radius: 100px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform 0.5s, opacity 1s;
+        }
+
+        .btn:active::after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, var(--primary) 100%);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px rgba(5,150,105,0.2);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(5,150,105,0.3);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.2);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37,99,235,0.3);
+            color: white;
+        }
+
+        .alert {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(37,99,235,0.1);
+            padding: 1rem 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tagify {
+            --tags-border-color: rgba(37,99,235,0.1);
+            --tags-hover-border-color: var(--success);
+            --tags-focus-border-color: var(--success);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .tagify:hover {
+            --tags-border-color: var(--success);
+            transform: translateY(-1px);
+        }
+
+        #autocomplete-list {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(37,99,235,0.1);
+            border: none;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .list-group-item {
+            border: none;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .list-group-item:hover {
+            background: rgba(37,99,235,0.05);
+            transform: translateX(5px);
+        }
+
+        .dark-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            transition: var(--transition);
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+
+        .dark-toggle-btn:hover {
+            color: var(--success);
+            transform: rotate(-15deg);
+        }
+
+        [data-bs-theme="dark"] {
+            --background: #0f172a;
+            --text: #f8fafc;
+        }
+
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, var(--background) 0%, #1e293b 100%);
+            color: var(--text);
+        }
+
+        [data-bs-theme="dark"] .card-form {
+            background: rgba(30,41,59,0.9);
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background: rgba(30,41,59,0.8);
+            border-color: rgba(255,255,255,0.1);
+            color: var(--text);
+        }
+
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            background: rgba(30,41,59,0.95);
+            border-color: var(--success);
+        }
+
+        [data-bs-theme="dark"] .form-label {
+            color: #93c5fd;
+        }
+
+        [data-bs-theme="dark"] #autocomplete-list {
+            background: rgba(30,41,59,0.95);
+        }
+
+        [data-bs-theme="dark"] .list-group-item {
+            background: transparent;
+            color: var(--text);
+        }
+
+        [data-bs-theme="dark"] .list-group-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        @media (max-width: 768px) {
+            .glass-header {
+                padding: 2rem;
+            }
+            .text-gradient {
+                font-size: 2rem;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="themeToggle" class="dark-toggle-btn">
+        <i class="fa-regular fa-moon"></i>
     </button>
-    <h2 class="text-center mb-5 fw-bold text-gradient">
-        <i class="fa-solid fa-cart-plus"></i> Ajouter un Nouveau Produit
-    </h2>
 
-    {% if messages %}
-    <div class="alert alert-info shadow-sm rounded-3">
-        <ul class="mb-0">
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+    <div class="container py-5">
+        <div class="glass-header text-center">
+            <h1 class="text-gradient">
+                <i class="fas fa-cart-plus"></i> Ajouter un Nouveau Produit
+            </h1>
+            <p class="text-white mb-0">Créez un nouveau produit en remplissant le formulaire ci-dessous</p>
+        </div>
 
-    <form id="addProductForm" method="POST" enctype="multipart/form-data" class="card card-form p-5 mx-auto" style="max-width: 800px; position:relative;">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger">
-            {{ form.non_field_errors }}
+        {% if messages %}
+        <div class="alert alert-info mb-4">
+            <ul class="mb-0">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
 
-        <div class="form-row">
-            <div class="mb-4 position-relative" style="min-width:230px;">
-                <label for="{{ form.nom.id_for_label }}" class="form-label">
-                    <i class="fa-solid fa-box"></i> Nom du Produit
-                </label>
-                {{ form.nom|add_class:"form-control" }}
-                <!-- Liste suggestions auto-completion -->
-            </div>
-            <div class="mb-4">
-                <label for="{{ form.reference.id_for_label }}" class="form-label">
-                    <i class="fa-solid fa-barcode"></i> Référence(s)
-                </label>
-                {{ form.reference|add_class:"form-control" }}
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="mb-4">
-                <label for="{{ form.prix.id_for_label }}" class="form-label">
-                    <i class="fa-solid fa-euro-sign"></i> Prix (€)
-                </label>
-                {{ form.prix|add_class:"form-control" }}
-            </div>
-            <div class="mb-4">
-                <label for="{{ form.quantite.id_for_label }}" class="form-label">
-                    <i class="fa-solid fa-cubes"></i> Quantité
-                </label>
-                {{ form.quantite|add_class:"form-control" }}
-            </div>
-        </div>
+        <div class="card card-form p-4 p-md-5 mx-auto" style="max-width: 800px;">
+            <form id="addProductForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-        <div class="d-flex justify-content-between mt-4 gap-2 flex-wrap">
-            <button type="submit" class="btn btn-success btn-lg shadow-sm" onclick="showNotif('Produit ajouté avec succès !')">
-                <i class="fa-solid fa-circle-plus"></i> Ajouter
-            </button>
-            <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-lg">
-                <i class="fa-solid fa-arrow-left"></i> Retour
-            </a>
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-row">
+                    <div class="form-group position-relative">
+                        <label for="{{ form.nom.id_for_label }}" class="form-label">
+                            <i class="fas fa-box"></i> Nom du Produit
+                        </label>
+                        {{ form.nom|add_class:"form-control" }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.reference.id_for_label }}" class="form-label">
+                            <i class="fas fa-barcode"></i> Référence(s)
+                        </label>
+                        {{ form.reference|add_class:"form-control" }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.prix.id_for_label }}" class="form-label">
+                            <i class="fas fa-euro-sign"></i> Prix (€)
+                        </label>
+                        {{ form.prix|add_class:"form-control" }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.quantite.id_for_label }}" class="form-label">
+                            <i class="fas fa-cubes"></i> Quantité
+                        </label>
+                        {{ form.quantite|add_class:"form-control" }}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-5">
+                    <button type="submit" class="btn btn-success" onclick="showNotif('Produit ajouté avec succès !')">
+                        <i class="fas fa-check-circle me-2"></i> Ajouter le Produit
+                    </button>
+                    <a href="{% url 'product_list' %}" class="btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i> Retour à la Liste
+                    </a>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
-{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    {% if reference_suggestions %}
+    <script id="reference-suggestions-data" type="application/json">
+        {{ reference_suggestions|json_script:"referenceSuggestions" }}
+    </script>
+    {% endif %}
+
+    <script>
+        // Dark mode toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const htmlRoot = document.getElementById('mainHtml');
+            
+            function setTheme(mode) {
+                htmlRoot.setAttribute('data-bs-theme', mode);
+                localStorage.setItem('theme', mode);
+                document.getElementById('themeToggle').innerHTML = 
+                    mode === 'dark' 
+                        ? '<i class="fa-regular fa-sun"></i>' 
+                        : '<i class="fa-regular fa-moon"></i>';
+            }
+
+            if (localStorage.getItem('theme')) {
+                setTheme(localStorage.getItem('theme'));
+            }
+
+            document.getElementById('themeToggle').onclick = function() {
+                const isDark = htmlRoot.getAttribute('data-bs-theme') === 'dark';
+                setTheme(isDark ? 'light' : 'dark');
+            };
+
+            // Tagify initialization
+            let refInput = document.querySelector('input[name="reference"]');
+            if (refInput) {
+                let referenceList = [];
+                if (window.referenceSuggestions) {
+                    referenceList = JSON.parse(document.getElementById('referenceSuggestions').textContent);
+                }
+                
+                new Tagify(refInput, {
+                    whitelist: referenceList,
+                    dropdown: {
+                        enabled: 0,
+                        maxItems: 10,
+                        classname: "tags-look",
+                        fuzzySearch: true
+                    },
+                    enforceWhitelist: false,
+                    editTags: false
+                });
+            }
+
+            // Autocomplete for product names
+            let nomInput = document.querySelector('input[name="nom"]');
+            if (nomInput) {
+                nomInput.setAttribute("autocomplete", "off");
+                
+                let debounceTimer;
+                nomInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        let query = this.value;
+                        if (query.length < 2) return;
+
+                        $.get("{% url 'autocomplete_product_names' %}", { q: query }, function(data) {
+                            let list = document.getElementById('autocomplete-list');
+                            if (!list) {
+                                list = document.createElement('ul');
+                                list.id = 'autocomplete-list';
+                                list.className = "list-group position-absolute w-100 mt-1";
+                                nomInput.parentNode.appendChild(list);
+                            }
+                            
+                            list.innerHTML = "";
+                            data.results.forEach(val => {
+                                let item = document.createElement('li');
+                                item.className = "list-group-item";
+                                item.textContent = val;
+                                item.onclick = () => {
+                                    nomInput.value = val;
+                                    list.innerHTML = "";
+                                };
+                                list.appendChild(item);
+                            });
+                        });
+                    }, 300);
+                });
+            }
+
+            // Form validation
+            $("#addProductForm input").on("blur change", function() {
+                let field = $(this);
+                let name = field.attr("name");
+                let value = field.val();
+                let formData = {};
+                formData[name] = value;
+                
+                $.ajax({
+                    url: "{% url 'validate_product_field' %}",
+                    method: "POST",
+                    data: formData,
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    success: function(data) {
+                        if (data.error) {
+                            field.addClass("is-invalid")
+                                .removeClass("is-valid");
+                            let feedback = field.next(".invalid-feedback");
+                            if (!feedback.length) {
+                                field.after('<div class="invalid-feedback"></div>');
+                                feedback = field.next(".invalid-feedback");
+                            }
+                            feedback.text(data.error).show();
+                        } else {
+                            field.removeClass("is-invalid")
+                                .addClass("is-valid");
+                            field.next(".invalid-feedback").remove();
+                        }
+                    }
+                });
+            });
+        });
+
+        // Notifications
+        function showNotif(message, type = "success") {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed bottom-0 end-0 m-4`;
+            toast.style.zIndex = "1050";
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(20px)";
+                toast.style.transition = "all 0.3s ease";
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

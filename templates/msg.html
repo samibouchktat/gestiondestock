@@ -1,381 +1,542 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="auto">
+<html lang="fr">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Espace Collaboratif – Messagerie</title>
-
-  <!-- Bootstrap 5.3 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- FontAwesome (avatars, rôles) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Inter font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>GestionStock Pro | Messagerie</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --gs-primary: #198754;
-      --gs-accent: #0d6efd;
-      --gs-bg: #f8fafc;
-      --gs-sidebar: #222b33;
-      --gs-glass: rgba(255,255,255,0.76);
-      --gs-card: rgba(255,255,255,0.98);
-      --gs-border: #e6eef4;
-      --gs-avatar-admin: #ffe2e2;
-      --gs-avatar-gestionnaire: #e0f1ff;
-      --gs-avatar-employe: #e4fcef;
-      --gs-avatar-text: #174158;
-      --gs-badge-shadow: #19875420;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #3b82f6;
+      --primary-lighter: #60a5fa;
+      --primary-lightest: #93c5fd;
+      --success: #059669;
+      --success-light: #34d399;
+      --danger: #dc2626;
+      --danger-light: #ef4444;
+      --warning: #d97706;
+      --warning-light: #fbbf24;
+      --info: #0891b2;
+      --info-light: #22d3ee;
+      --dark: #111827;
+      --dark-light: #1f2937;
+      --gray: #6b7280;
+      --gray-light: #9ca3af;
+      --gray-lighter: #d1d5db;
+      --white: #ffffff;
+      --bg-sidebar: #0f172a;
+      --bg-main: #f8fafc;
     }
-    [data-bs-theme="dark"] {
-      --gs-bg: #181f24;
-      --gs-sidebar: #161d23;
-      --gs-glass: rgba(30,32,36,0.63);
-      --gs-card: rgba(30,36,40,0.97);
-      --gs-border: #33404b;
-      --gs-avatar-admin: #613838;
-      --gs-avatar-gestionnaire: #1a354c;
-      --gs-avatar-employe: #1a4c34;
-      --gs-avatar-text: #eaf3ff;
-      --gs-badge-shadow: #217e5530;
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-main);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    html,body{ height:100%; background:var(--gs-bg);}
-    body{
-      font-family:'Inter',sans-serif;
-      min-height:100vh; margin:0;
-      display: flex;
-      background: linear-gradient(110deg, var(--gs-primary) 0%, var(--gs-accent) 85%, var(--gs-bg) 100%);
-    }
-    .side-nav {
-      background: var(--gs-sidebar);
-      min-width: 75px;
-      width: 78px;
+
+    /* Modern Glassmorphism Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
       height: 100vh;
-      padding: 2.8rem 0 .7rem 0;
-      display: flex; flex-direction: column; align-items: center; gap: 2.2rem;
-      box-shadow: 2px 0 22px #00182111;
-      z-index: 10;
-      position: fixed; left:0; top:0; bottom:0;
-      border-right: 2px solid var(--gs-border);
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      transition: all 0.3s ease;
     }
-    .side-nav .logo {
-      color: #fff;
-      font-weight: 900;
-      font-size: 2rem;
-      letter-spacing: .5px;
-      display: flex; align-items: center; gap: .7rem;
-      margin-bottom: 2.2rem;
+
+    .sidebar-title {
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: linear-gradient(to right, rgba(37, 99, 235, 0.1), transparent);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .side-nav .nav-link {
-      color: #d3e1ee;
-      opacity: 0.86;
-      font-size: 1.55em;
-      margin-bottom: 1.7rem;
-      transition: color .14s, opacity .11s;
-      position: relative;
-      border-radius: 50%;
-      padding: .63em;
-      display: flex; align-items: center; justify-content: center;
+
+    .sidebar-title i {
+      font-size: 1.5rem;
+      color: var(--primary-lighter);
     }
-    .side-nav .nav-link.active,
-    .side-nav .nav-link:hover {
-      color: var(--gs-primary);
-      background: #fff1;
-      opacity: 1;
-      text-decoration: none;
-      box-shadow: 0 2px 10px #19875412;
+
+    .sidebar-title span {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.5px;
     }
-    .side-nav .notif-badge {
-      position: absolute; top: 2px; right: -8px;
-      background: var(--gs-primary);
-      color: #fff;
-      font-size: .77em;
-      padding: 1px 8px 0 8px;
-      border-radius: 1rem;
-      font-weight: bold;
-      box-shadow: 0 1px 6px var(--gs-badge-shadow);
-      border: 1.5px solid #fff2;
+
+    .sidebar-nav {
+      padding: 1.5rem 0;
     }
-    .side-nav .theme-switch {
-      background: var(--gs-card);
-      color: var(--gs-accent);
-      border-radius: 50%;
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      margin-top: auto;
-      box-shadow: 0 2px 8px var(--gs-badge-shadow);
-      border: none;
-      font-size: 1.2em;
-      cursor: pointer;
+
+    .nav-section {
+      margin-bottom: 1.5rem;
+      padding: 0 1rem;
     }
-    .msg-layout{
-      margin-left:78px;
-      width:100vw; min-height:100vh;
-      display:flex; justify-content:center; align-items: flex-start;
-      background:transparent;
+
+    .nav-section-title {
+      color: var(--gray-light);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
     }
-    .msg-wrapper{
-      background: var(--gs-card);
-      box-shadow:0 8px 44px 0 #19875412;
-      border-radius:1.7rem;
-      width:100%; max-width:640px;
-      margin:2.5rem 2.2rem 0 2.2rem;
-      border:1.5px solid var(--gs-border);
-      padding:2.5rem 2.7rem 2.1rem 2.7rem;
-      min-height: 74vh;
-      position:relative; overflow:hidden;
-      animation: fadeIn .76s cubic-bezier(.21,1.11,.57,1) both;
-      z-index:2;
-    }
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(38px);}
-      to { opacity:1; transform:none;}
-    }
-    .msg-title {
-      font-weight: 800; font-size: 1.35rem;
-      color: var(--gs-primary);
-      letter-spacing: .34px;
-      margin-bottom: 2.1rem;
-      display: flex; align-items: center; gap: .7rem;
-    }
-    .msg-title i{ color:var(--gs-accent);}
-    .input-group-text { background:transparent; border:none;}
-    .input-group input {
-      border-radius: .9rem !important;
-      font-size: 1.10rem;
-      background: #f4f7fa !important;
-      border: 1.5px solid #e4eeef !important;
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      padding: 0.875rem 1.5rem;
+      color: var(--gray-light);
       font-weight: 500;
-      transition: border .16s, box-shadow .14s;
-    }
-    .input-group input:focus {
-      border-color: var(--gs-primary) !important;
-      background: #e7f7ff !important;
-      box-shadow: 0 2px 11px #19875418 !important;
-    }
-    .user-list {
-      margin-top: 2.1rem;
-      min-height: 230px;
-      max-height: 59vh;
-      overflow-y: auto;
-      padding-right: 10px;
-    }
-    .fade-slide{opacity:0;transform:translateY(14px);transition:all .25s cubic-bezier(.5,0,.5,1);}
-    .fade-slide.show{opacity:1;transform:none;}
-    .user-card{
-      background: var(--gs-glass);
-      border: 1.7px solid #e9f2f1;
-      border-radius: 1.12rem;
-      padding: 1.06rem 1.23rem;
-      display: flex; align-items: center; gap: 1.17rem;
-      margin-bottom: 1rem;
-      box-shadow:0 1px 8px #1987540a;
-      cursor: pointer;
-      min-height:66px;
-      transition: box-shadow .19s, border .13s, background .13s;
-      text-decoration: none;
-      position:relative;
-    }
-    .user-card:hover, .user-card:focus{
-      background:rgba(25,135,84,.09);
-      box-shadow:0 10px 22px #1987541c;
-      border:1.9px solid var(--gs-primary);
-      outline: none;
-      z-index: 2;
+      border-radius: 8px;
+      margin: 0.25rem 0;
+      transition: all 0.2s ease;
       text-decoration: none;
     }
-    .user-avatar{
-      width: 46px; height: 46px; border-radius: 50%;
-      font-size: 1.15rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--gs-avatar-text);
-      background: var(--gs-avatar-employe);
-      object-fit: cover;
+
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--white);
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    .sidebar-nav a.active {
+      background: linear-gradient(to right, var(--primary), transparent);
+      border-right: 3px solid var(--primary-lighter);
+    }
+
+    .sidebar-nav i {
+      width: 1.5rem;
+      font-size: 1.1rem;
+      margin-right: 1rem;
+      color: var(--primary-lighter);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      margin-left: 280px;
+      padding: 2rem;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Messages Section */
+    .messages-container {
+      background: var(--white);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+      position: relative;
       overflow: hidden;
-      border: 2.5px solid #fff;
-      box-shadow:0 2px 8px #2222ff11;
+      animation: fadeInUp 0.5s ease backwards;
     }
-    .user-card[data-role="admin"] .user-avatar{background:var(--gs-avatar-admin);}
-    .user-card[data-role="gestionnaire"] .user-avatar{background:var(--gs-avatar-gestionnaire);}
-    .user-card[data-role="employe"] .user-avatar{background:var(--gs-avatar-employe);}
-    .user-info { flex:1;}
-    .user-name { font-weight:700; color:#19725b; font-size:1.16rem;}
-    .user-card[data-role="admin"] .user-name{color:#be2e19;}
-    .user-card[data-role="gestionnaire"] .user-name{color:#2066ad;}
-    .user-card[data-role="employe"] .user-name{color:#167c63;}
-    .role-badge{
-      font-size:.99em; border-radius:1.7em;
-      padding:.38em 1.2em .40em 1em;
-      font-weight:700; letter-spacing:.32px;
-      box-shadow:0 1px 5px #0d6efd10;
-      border:1.1px solid #eaf3fa;
-      display: flex; align-items: center; gap:.42em;
+
+    .messages-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 300px;
+      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
+      border-radius: 50%;
+      transform: translate(150px, -150px);
+      z-index: 0;
     }
-    .badge-admin{ background:#ffe5e5; color:#b43a3a;}
-    .badge-gestionnaire{ background:#e3eeff; color:#2172c6;}
-    .badge-employe{ background:#e4fcf6; color:#158a6e;}
-    .status-dot {
-      width: .8em; height: .8em; border-radius:50%; margin-right:.33em;
-      background:#adb5bd; display:inline-block;
+
+    .messages-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 2rem;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .status-online { background: #20c997;}
-    .status-offline { background: #b0bec5;}
-    .spinner-wrapper{display:flex;gap:.7rem;flex-direction:column;}
-    .placeholder-glow{background:rgba(25,135,84,.08);}
-    .msg-empty{
-      animation: popIn .53s cubic-bezier(.43,1.44,.53,1) both;
-      color: #adb5bd; text-align: center; font-weight: 600; font-size: 1.04em;
-      margin-top: 2em;
+
+    .messages-title i {
+      color: var(--primary);
     }
-    @keyframes popIn {from{opacity:0;transform:scale(.96);}to{opacity:1;transform:none;}}
-    @media (max-width:900px){
-      .msg-wrapper{max-width:99vw; margin:2.2rem 2vw;}
+
+    /* Search Bar */
+    .search-container {
+      position: relative;
+      margin-bottom: 2rem;
     }
-    @media (max-width:700px){
-      .side-nav{display:none;}
-      .msg-layout{margin-left:0;}
-      .msg-wrapper{padding:1.1rem .6rem 1.4rem .6rem;}
+
+    .search-input {
+      width: 100%;
+      padding: 1rem 1.5rem 1rem 3rem;
+      border: 2px solid var(--gray-lighter);
+      border-radius: 1rem;
+      font-size: 1rem;
+      color: var(--dark);
+      background: var(--white);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-lighter);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+      font-size: 1.1rem;
+    }
+
+    /* User Cards */
+    .user-list {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .user-card {
+      background: var(--white);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      transition: all 0.3s ease;
+      border: 1px solid var(--gray-lighter);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-lighter);
+    }
+
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 1rem;
+      background: var(--primary-lighter);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .user-role {
+      color: var(--gray);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+
+    .status-online {
+      background: var(--success);
+    }
+
+    .status-offline {
+      background: var(--gray-light);
+    }
+
+    .role-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-admin {
+      background: rgba(220, 38, 38, 0.1);
+      color: var(--danger);
+    }
+
+    .badge-gestionnaire {
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary);
+    }
+
+    .badge-employe {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-card {
+      animation: fadeInUp 0.5s ease backwards;
+    }
+
+    .user-card:nth-child(1) { animation-delay: 0.1s; }
+    .user-card:nth-child(2) { animation-delay: 0.2s; }
+    .user-card:nth-child(3) { animation-delay: 0.3s; }
+    .user-card:nth-child(4) { animation-delay: 0.4s; }
+    .user-card:nth-child(5) { animation-delay: 0.5s; }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 1rem;
+      }
+
+      .messages-container {
+        padding: 1.5rem;
+      }
+
+      .messages-title {
+        font-size: 1.5rem;
+      }
+
+      .user-card {
+        padding: 1rem;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar dynamique -->
-  <nav class="side-nav">
-    <div class="logo">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">
       <i class="fas fa-warehouse"></i>
+      <span>GestionStock Pro</span>
     </div>
-    {% if user.is_authenticated %}
-      {% if user.role == 'admin' %}
-        <a href="{% url 'dashboard_admin' %}" class="nav-link" title="Dashboard"><i class="fas fa-th-large"></i></a>
-      {% elif user.role == 'gestionnaire' %}
-        <a href="{% url 'dashboard_gestionnaire' %}" class="nav-link" title="Dashboard"><i class="fas fa-th-large"></i></a>
-      {% elif user.role == 'fournisseur' %}
-        <a href="{% url 'dashboard_fournisseur' %}" class="nav-link" title="Dashboard"><i class="fas fa-th-large"></i></a>
-      {% else %}
-        <a href="{% url 'dashboard_employe' %}" class="nav-link" title="Dashboard"><i class="fas fa-th-large"></i></a>
-      {% endif %}
-      <a href="{% url 'product_list' %}" class="nav-link" title="Articles"><i class="fas fa-boxes-stacked"></i></a>
-      <a href="{% url 'msg' %}" class="nav-link active" title="Messagerie">
-        <i class="fas fa-comments"></i>
-        {% if nb_msg_non_lus and nb_msg_non_lus > 0 %}
-          <span class="notif-badge">{{ nb_msg_non_lus }}</span>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        {% if user.role == 'admin' %}
+          <a href="{% url 'dashboard_admin' %}" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            Tableau de bord
+          </a>
+        {% elif user.role == 'gestionnaire' %}
+          <a href="{% url 'dashboard_gestionnaire' %}" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            Tableau de bord
+          </a>
+        {% elif user.role == 'fournisseur' %}
+          <a href="{% url 'dashboard_fournisseur' %}" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            Tableau de bord
+          </a>
+        {% else %}
+          <a href="{% url 'dashboard_employe' %}" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            Tableau de bord
+          </a>
         {% endif %}
-      </a>
-      <a href="{% url 'complete_profile' %}" class="nav-link" title="Profil"><i class="fas fa-user-circle"></i></a>
-      <button class="theme-switch mt-2" id="themeSwitch" aria-label="Basculer le thème"><i class="fas fa-moon"></i></button>
-    {% endif %}
-  </nav>
+        <a href="{% url 'product_list' %}" class="nav-link">
+          <i class="fas fa-box"></i>
+          Articles
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Communication</div>
+        <a href="{% url 'msg' %}" class="nav-link active">
+          <i class="fas fa-comments"></i>
+          Messagerie
+          {% if nb_msg_non_lus and nb_msg_non_lus > 0 %}
+            <span class="badge bg-danger rounded-pill ms-auto">{{ nb_msg_non_lus }}</span>
+          {% endif %}
+        </a>
+        <a href="{% url 'complete_profile' %}" class="nav-link">
+          <i class="fas fa-user-circle"></i>
+          Mon profil
+        </a>
+      </div>
+    </nav>
+  </div>
 
-  <section class="msg-layout flex-grow-1">
-    <main class="msg-wrapper">
-      <div class="msg-title"><i class="fas fa-comments"></i> Messagerie interne</div>
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="messages-container">
+      <h1 class="messages-title">
+        <i class="fas fa-comments"></i>
+        Messagerie
+      </h1>
 
       {% if user.is_authenticated %}
-        <!-- Champ recherche -->
-        <div class="input-group mb-3 shadow-sm">
-          <span class="input-group-text border-end-0"><i class="fas fa-search"></i></span>
-          <input class="form-control border-start-0" placeholder="Rechercher un utilisateur…" id="searchInput" autocomplete="off">
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un utilisateur..." autocomplete="off">
         </div>
 
-        <!-- Loader skeleton -->
-        <div id="spinner" class="spinner-wrapper mb-3">
-          <div class="placeholder-glow w-100 rounded-3" style="height:55px"></div>
-          <div class="placeholder-glow w-75 rounded-3" style="height:55px"></div>
-          <div class="placeholder-glow w-50 rounded-3" style="height:55px"></div>
-        </div>
-
-        <!-- Liste utilisateurs -->
-        <div class="user-list" id="userList" style="overflow-x:hidden;">
+        <div class="user-list" id="userList">
           {% if users %}
             {% for u in users %}
-              <a href="{% url 'conv' u.id %}" class="user-card fade-slide"
-                data-username="{{ u.username|lower }}"
-                data-role="{{ u.role|lower }}"
-                tabindex="0"
-                title="Ouvrir la conversation">
-                <span class="user-avatar">
+              <a href="{% url 'conv' u.id %}" class="user-card" data-username="{{ u.username|lower }}" data-role="{{ u.role|lower }}">
+                <div class="user-avatar">
                   {% if u.avatar %}
-                    <img src="{{ u.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                    <img src="{{ u.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
                   {% else %}
                     {{ u.username|slice:":1"|upper }}
                   {% endif %}
-                </span>
-                <span class="user-info">
-                  <span class="user-name">{{ u.username }}</span>
-                  <div style="font-size:0.98em; color:#8db7b7;">
-                    <span class="status-dot {% if u.is_online %}status-online{% else %}status-offline{% endif %}"></span>
+                </div>
+                <div class="user-info">
+                  <div class="user-name">{{ u.username }}</div>
+                  <div class="user-role">
+                    <span class="status-indicator {% if u.is_online %}status-online{% else %}status-offline{% endif %}"></span>
                     {% if u.is_online %}En ligne{% else %}Hors ligne{% endif %}
                   </div>
-                </span>
+                </div>
                 {% if u.role == 'admin' %}
-                  <span class="role-badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>
+                  <span class="role-badge badge-admin">
+                    <i class="fas fa-shield-alt"></i>
+                    Admin
+                  </span>
                 {% elif u.role == 'gestionnaire' %}
-                  <span class="role-badge badge-gestionnaire"><i class="fas fa-user-tie"></i> Gestionnaire</span>
+                  <span class="role-badge badge-gestionnaire">
+                    <i class="fas fa-user-tie"></i>
+                    Gestionnaire
+                  </span>
                 {% else %}
-                  <span class="role-badge badge-employe"><i class="fas fa-user"></i> Employé</span>
+                  <span class="role-badge badge-employe">
+                    <i class="fas fa-user"></i>
+                    Employé
+                  </span>
                 {% endif %}
               </a>
             {% endfor %}
           {% else %}
-            <div class="msg-empty"><i class="fas fa-users-slash fa-lg me-1"></i> Aucun utilisateur trouvé.</div>
+            <div class="text-center text-muted mt-4">
+              <i class="fas fa-users-slash fa-2x mb-3"></i>
+              <p>Aucun utilisateur trouvé</p>
+            </div>
           {% endif %}
         </div>
       {% else %}
-        <div class="text-center my-5">
-          <h1 class="h5 fw-bold mb-3"><i class="fas fa-lock me-1"></i>Veuillez vous connecter pour accéder à la messagerie.</h1>
-          <a href="{% url 'login' %}" class="btn btn-primary btn-lg"><i class="fas fa-sign-in-alt me-1"></i>Se connecter</a>
+        <div class="text-center mt-5">
+          <h2 class="h4 mb-4">Veuillez vous connecter pour accéder à la messagerie</h2>
+          <a href="{% url 'login' %}" class="btn btn-modern btn-modern-primary">
+            <i class="fas fa-sign-in-alt"></i>
+            Se connecter
+          </a>
         </div>
       {% endif %}
-    </main>
-  </section>
+    </div>
+  </main>
 
-  <!-- Bootstrap bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Animation apparition + recherche live + sidebar
-    document.addEventListener("DOMContentLoaded",()=>{
-      const spinner=document.getElementById("spinner");
-      const userList=document.getElementById("userList");
-      setTimeout(()=>{
-        spinner.classList.add("d-none");
-        userList.querySelectorAll('.fade-slide').forEach((el,i)=>setTimeout(()=>el.classList.add('show'),62*i));
-      },420);
+    document.addEventListener('DOMContentLoaded', function() {
+      // Recherche en temps réel
+      const searchInput = document.getElementById('searchInput');
+      const userList = document.getElementById('userList');
 
-      const search=document.getElementById('searchInput');
-      if(search){
-        search.addEventListener('input',e=>{
-          const q=e.target.value.toLowerCase();
-          let count=0;
-          userList.querySelectorAll('[data-username]').forEach(card=>{
-            if(card.dataset.username.includes(q)){
-              card.style.display='flex'; count++;
-            }else{
-              card.style.display='none';
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          const searchTerm = e.target.value.toLowerCase();
+          const userCards = userList.querySelectorAll('.user-card');
+          let hasResults = false;
+
+          userCards.forEach(card => {
+            const username = card.dataset.username;
+            if (username.includes(searchTerm)) {
+              card.style.display = 'flex';
+              hasResults = true;
+            } else {
+              card.style.display = 'none';
             }
           });
-          // Message aucun résultat
-          let emptyMsg=userList.querySelector('.msg-empty');
-          if(!count && !emptyMsg){
-            let div=document.createElement('div');
-            div.className='msg-empty';
-            div.innerHTML='<i class="fas fa-users-slash fa-lg me-1"></i> Aucun utilisateur trouvé.';
-            userList.appendChild(div);
-          }else if(count && (emptyMsg)){
-            emptyMsg.remove();
+
+          // Afficher/masquer le message "Aucun résultat"
+          let noResults = userList.querySelector('.text-muted');
+          if (!hasResults && !noResults) {
+            const noResultsDiv = document.createElement('div');
+            noResultsDiv.className = 'text-center text-muted mt-4';
+            noResultsDiv.innerHTML = `
+              <i class="fas fa-users-slash fa-2x mb-3"></i>
+              <p>Aucun résultat trouvé</p>
+            `;
+            userList.appendChild(noResultsDiv);
+          } else if (hasResults && noResults) {
+            noResults.remove();
           }
         });
       }
 
-      // Thème sombre/clair
-      const btn=document.getElementById('themeSwitch');
-      if(btn){
-        btn.addEventListener('click',()=>{
-          let html=document.documentElement;
-          let theme=html.getAttribute('data-bs-theme');
-          if(theme==="dark"){ html.setAttribute('data-bs-theme','auto'); btn.innerHTML='<i class="fas fa-moon"></i>'; }
-          else { html.setAttribute('data-bs-theme','dark'); btn.innerHTML='<i class="fas fa-sun"></i>'; }
-        });
-      }
+      // Toggle sidebar sur mobile
+      const toggleButton = document.createElement('button');
+      toggleButton.className = 'btn btn-primary position-fixed d-lg-none';
+      toggleButton.style.cssText = 'top: 1rem; left: 1rem; z-index: 1100;';
+      toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
+      document.body.appendChild(toggleButton);
+
+      toggleButton.addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('show');
+      });
+
+      // Fermer la sidebar en cliquant à l'extérieur
+      document.addEventListener('click', function(e) {
+        const sidebar = document.querySelector('.sidebar');
+        const button = document.querySelector('.btn-primary.position-fixed');
+        
+        if (!sidebar.contains(e.target) && !button.contains(e.target)) {
+          sidebar.classList.remove('show');
+        }
+      });
     });
   </script>
 </body>

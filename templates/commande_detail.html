@@ -1,147 +1,420 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr" data-bs-theme="light" id="mainHtml">
 <head>
     <meta charset="UTF-8">
-    <title>Détail de la commande | GestionStock PRO</title>
+    <title>Détail de la commande | GestionStock Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --primary-lighter: #60a5fa;
+            --primary-lightest: #93c5fd;
+            --success: #059669;
+            --success-light: #34d399;
+            --danger: #dc2626;
+            --danger-light: #ef4444;
+            --warning: #d97706;
+            --warning-light: #fbbf24;
+            --info: #0891b2;
+            --info-light: #22d3ee;
+            --dark: #111827;
+            --dark-light: #1f2937;
+            --gray: #6b7280;
+            --gray-light: #9ca3af;
+            --gray-lighter: #d1d5db;
+            --white: #ffffff;
+            --bg-main: #f8fafc;
+        }
+
         body {
-            background: linear-gradient(120deg, #e3f0fd 70%, #d7fbe6 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-main) 0%, #eaf9f4 100%);
             min-height: 100vh;
+            color: var(--dark);
         }
-        [data-bs-theme="dark"] body {
-            background: linear-gradient(120deg, #101e29 80%, #133330 100%) !important;
-        }
-        .card-header-pro {
-            background: linear-gradient(90deg, #0a2647 70%, #20c997 100%);
-            color: #fff;
-            border-radius: 1.2rem 1.2rem 0 0;
-            box-shadow: 0 2px 14px #0a264755;
-        }
-        .text-gradient {
-            background: linear-gradient(90deg, #0d6efd, #20c997);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: bold;
-            font-size: 2rem;
-            letter-spacing: 1px;
-        }
-        .badge-etat {
-            font-size: 1em;
-            font-weight: 500;
-            padding: 0.45em 1.3em;
-            border-radius: 2em;
-        }
-        .badge-validee { background: linear-gradient(90deg,#20c997,#73e3b1); color: #16513d; }
-        .badge-attente { background: linear-gradient(90deg,#ffe080,#ffeecd); color: #987500;}
-        .badge-refusee { background: linear-gradient(90deg,#ff8686,#ffc7c7); color: #b00d24;}
-        .table th, .table td { vertical-align: middle; font-size: 1.08em; }
-        .table thead { background: linear-gradient(90deg,#ecf5fd 60%,#d0f7e7 100%);}
-        .btn-pro {
-            background: linear-gradient(90deg, #0a2647, #20c997);
-            color: #fff;
-            font-weight: 500;
-            border-radius: 2.5em;
-            padding: 0.7em 2.4em;
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
             border: none;
-            box-shadow: 0 2px 12px #20c99733;
-            transition: 0.18s;
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px rgba(37,99,235,0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
         }
-        .btn-pro:hover {
-            background: linear-gradient(90deg, #20c997 60%, #0d6efd 100%);
-            color: #fff;
-            transform: scale(1.04);
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .shadow-card {
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 28px #0a264721;
+
+        .card-header {
+            background: linear-gradient(90deg, rgba(10,38,71,0.97) 0%, rgba(32,201,151,0.95) 100%);
+            padding: 2rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            border-radius: 50%;
+            transform: translate(150px, -150px);
+        }
+
+        .card-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(37,99,235,0.1);
+        }
+
+        .info-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .info-value {
+            color: var(--dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .badge-etat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge-validee {
+            background: linear-gradient(135deg, var(--success-light) 0%, var(--success) 100%);
+            color: white;
+        }
+
+        .badge-attente {
+            background: linear-gradient(135deg, var(--warning-light) 0%, var(--warning) 100%);
+            color: white;
+        }
+
+        .badge-refusee {
+            background: linear-gradient(135deg, var(--danger-light) 0%, var(--danger) 100%);
+            color: white;
+        }
+
+        .articles-section {
+            margin-top: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead {
+            background: linear-gradient(90deg, var(--bg-main) 0%, #f1f7fe 100%);
+        }
+
+        .table th {
+            font-weight: 700;
+            color: var(--dark);
+            padding: 1.2rem 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .table td {
+            padding: 1.2rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-lighter);
+            font-size: 0.95rem;
+        }
+
+        .table tr:hover {
+            background: rgba(37,99,235,0.02);
+        }
+
+        .quantity-badge {
+            background: var(--primary-lightest);
+            color: var(--primary-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            padding: 0.8rem 1.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.2);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37,99,235,0.3);
+            color: white;
+        }
+
+        /* Dark Mode Styles */
+        [data-bs-theme="dark"] {
+            --bg-main: #0f172a;
+            --dark: #ffffff;
+            --gray: #9ca3af;
+        }
+
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, var(--bg-main) 0%, #1e293b 100%);
+        }
+
+        [data-bs-theme="dark"] .card {
+            background: rgba(30,41,59,0.9);
+        }
+
+        [data-bs-theme="dark"] .info-item {
+            background: rgba(30,41,59,0.5);
+        }
+
+        [data-bs-theme="dark"] .table thead {
+            background: linear-gradient(90deg, rgba(30,41,59,0.5) 0%, rgba(30,41,59,0.8) 100%);
+        }
+
+        [data-bs-theme="dark"] .table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        [data-bs-theme="dark"] .quantity-badge {
+            background: var(--primary-dark);
+            color: var(--primary-lightest);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+            }
+
+            .info-list {
+                grid-template-columns: 1fr;
+            }
+
+            .table th, .table td {
+                padding: 0.75rem;
+            }
+
+            .badge-etat {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container py-5">
-    <div class="mx-auto shadow-card bg-white p-0" style="max-width: 700px;">
-        <div class="card-header-pro px-4 py-3 d-flex justify-content-between align-items-center">
-            <div>
-                <i class="fa-solid fa-file-invoice"></i>
-                <span class="text-gradient">Détail de la commande n°{{ commande.id }}</span>
+    <div class="container py-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h1 class="card-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Commande n°{{ commande.id }}
+                </h1>
+                <button id="themeToggle" class="btn btn-outline-light rounded-circle p-2" title="Changer le thème">
+                    <i class="fas fa-moon"></i>
+                </button>
             </div>
-            <button id="toggleDark" class="btn btn-outline-light btn-sm rounded-pill ms-2" title="Mode sombre/clair">
-                <i class="fa-regular fa-moon"></i>
-            </button>
-        </div>
-        <div class="p-4">
-            <ul class="list-group mb-4">
-                <li class="list-group-item border-0">
-                    <strong><i class="fa-solid fa-industry"></i> Fournisseur :</strong>
-                    <span class="ms-1">{{ commande.fournisseur.nom }}</span>
-                </li>
-                <li class="list-group-item border-0">
-                    <strong><i class="fa-solid fa-flag-checkered"></i> État :</strong>
-                    {% if commande.etat == "validée" %}
-                        <span class="badge badge-etat badge-validee ms-1">Validée</span>
-                    {% elif commande.etat == "en_attente" %}
-                        <span class="badge badge-etat badge-attente ms-1">En attente</span>
-                    {% elif commande.etat == "refusée" %}
-                        <span class="badge badge-etat badge-refusee ms-1">Refusée</span>
-                    {% else %}
-                        <span class="badge bg-secondary ms-1">{{ commande.etat }}</span>
-                    {% endif %}
-                </li>
-                <li class="list-group-item border-0">
-                    <strong><i class="fa-solid fa-calendar-alt"></i> Date :</strong>
-                    <span class="ms-1">{{ commande.date }}</span>
-                </li>
-                <li class="list-group-item border-0">
-                    <strong><i class="fa-solid fa-user"></i> Employé :</strong>
-                    <span class="ms-1">{{ commande.employe.username }}</span>
-                </li>
-            </ul>
-            <h4 class="mb-3 text-gradient"><i class="fa-solid fa-boxes-stacked"></i> Articles commandés</h4>
-            <div class="table-responsive">
-                <table class="table table-hover table-borderless mb-0">
-                    <thead>
-                        <tr>
-                            <th>Article</th>
-                            <th>Quantité</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for avoir in avoirs %}
-                        <tr>
-                            <td>{{ avoir.article.nom }}</td>
-                            <td><span class="badge bg-light text-dark px-3 py-2 fs-6">{{ avoir.quantite }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="text-center text-muted">Aucun article dans cette commande.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-4 d-flex justify-content-end">
-                <a href="{% url 'dashboard_fournisseur' %}" class="btn btn-pro">
-                    <i class="fa-solid fa-arrow-left"></i> Retour
-                </a>
+
+            <div class="card-body p-4">
+                <ul class="info-list mb-4">
+                    <li class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-building"></i>
+                            Fournisseur
+                        </div>
+                        <div class="info-value">{{ commande.fournisseur.nom }}</div>
+                    </li>
+                    <li class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-flag-checkered"></i>
+                            État
+                        </div>
+                        <div class="info-value">
+                            {% if commande.etat == "validée" %}
+                                <span class="badge-etat badge-validee">
+                                    <i class="fas fa-check-circle"></i>
+                                    Validée
+                                </span>
+                            {% elif commande.etat == "en_attente" %}
+                                <span class="badge-etat badge-attente">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    En attente
+                                </span>
+                            {% elif commande.etat == "refusée" %}
+                                <span class="badge-etat badge-refusee">
+                                    <i class="fas fa-times-circle"></i>
+                                    Refusée
+                                </span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    <li class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Date
+                        </div>
+                        <div class="info-value">{{ commande.date }}</div>
+                    </li>
+                    <li class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user"></i>
+                            Employé
+                        </div>
+                        <div class="info-value">{{ commande.employe.username }}</div>
+                    </li>
+                </ul>
+
+                <div class="articles-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        Articles commandés
+                    </h2>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Article</th>
+                                    <th>Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for avoir in avoirs %}
+                                <tr>
+                                    <td>{{ avoir.article.nom }}</td>
+                                    <td>
+                                        <span class="quantity-badge">{{ avoir.quantite }}</span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-4">
+                                        Aucun article dans cette commande
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <a href="{% url 'dashboard_fournisseur' %}" class="btn btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Dark/light switcher -->
-<script>
-    const htmlRoot = document.getElementById('mainHtml');
-    document.getElementById('toggleDark').onclick = function () {
-        let isDark = htmlRoot.getAttribute('data-bs-theme') === 'dark';
-        htmlRoot.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        htmlRoot.setAttribute('data-bs-theme', 'dark');
-    }
-</script>
+
+    <script>
+        // Dark mode toggle
+        const htmlRoot = document.getElementById('mainHtml');
+        const themeToggle = document.getElementById('themeToggle');
+        
+        function setTheme(mode) {
+            htmlRoot.setAttribute('data-bs-theme', mode);
+            localStorage.setItem('theme', mode);
+            themeToggle.innerHTML = mode === 'dark' 
+                ? '<i class="fas fa-sun"></i>' 
+                : '<i class="fas fa-moon"></i>';
+        }
+
+        if (localStorage.getItem('theme')) {
+            setTheme(localStorage.getItem('theme'));
+        }
+
+        themeToggle.onclick = function() {
+            const isDark = htmlRoot.getAttribute('data-bs-theme') === 'dark';
+            setTheme(isDark ? 'light' : 'dark');
+        };
+    </script>
 </body>
 </html>
