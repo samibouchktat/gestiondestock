@@ -113,8 +113,8 @@ class FournisseurForm(forms.ModelForm):
             field.widget.attrs['class'] = 'form-control'
 
 class FournisseurUserForm(forms.Form):
-    username = forms.CharField(label="Nom d'utilisateur", max_length=150)
-    password = forms.CharField(label="Mot de passe", widget=forms.PasswordInput)
+    username = forms.CharField(label="Nom d'utilisateur", max_length=150, required=False)
+    password = forms.CharField(label="Mot de passe", widget=forms.PasswordInput, required=False)
     email = forms.EmailField(label="Email")
     nom = forms.CharField(label="Nom du fournisseur", max_length=100)
     contact = forms.CharField(label="Contact", max_length=20)

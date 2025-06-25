@@ -1,4 +1,8 @@
 import os
+from .models import Article, MouvementStock
+from .utils import generate_report
+#rom openai.error import RateLimitError, OpenAIError    
+from .utils import generate_report 
 from django.db.models import F
 from django.shortcuts import render
 from django.utils.timezone import now
@@ -6,6 +10,7 @@ from django.db.models import F
 from .models import Article
 import json
 import datetime
+from django.db import IntegrityError
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -344,6 +349,7 @@ def complete_profile(request):
         "form": form_code
     })
 
+
 @login_required
 def commande_list(request):
     commandes = Commande.objects.filter(employe=request.user)
@@ -384,28 +390,115 @@ def is_gestionnaire(user):
 @user_passes_test(is_gestionnaire)
 def fournisseur_list(request):
     fournisseurs = Fournisseur.objects.all()
+    print("Fournisseurs trouvés :", fournisseurs.count())
+    for f in fournisseurs:
+        print(f"Fournisseur : {f.pk} {f.nom} | User: {f.user}")
     return render(request, 'fournisseur_list.html', {'fournisseurs': fournisseurs})
+
+@login_required
+@user_passes_test(is_gestionnaire)
 def add_fournisseur(request):
+    import traceback
     if request.method == "POST":
         form = FournisseurUserForm(request.POST)
+        print(">>>> FORM POSTED", request.POST)
         if form.is_valid():
             data = form.cleaned_data
+            print(">>>> FORM IS VALID", data)
             User = get_user_model()
-            user = User.objects.create_user(
-                username=data['username'],
-                password=data['password'],
-                email=data['email'],
-                role='fournisseur'
-            )
-            Fournisseur.objects.create(
-                user=user,  # On lie le fournisseur au user créé
-                nom=data['nom'],
-                contact=data['contact'],
-                email=data['email'],
-                adresse=data['adresse']
-            )
-            messages.success(request, "Fournisseur et compte utilisateur créés.")
-            return redirect('fournisseur_list')
+            user = None
+            username = data.get('username')
+            password = data.get('password')
+            email = data.get('email')
+            if username and password:
+                try:
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        email=email,
+                        role='fournisseur'
+                    )
+                    print(">>>> USER CREATED", user)
+                except Exception as e:
+                    print(">>>> ERREUR CRÉATION USER", e)
+                    traceback.print_exc()
+                    form.add_error(None, f"Erreur création user: {e}")
+                    return render(request, 'add_fournisseur.html', {'form': form})
+            try:
+                fournisseur = Fournisseur.objects.create(
+                    user=user,
+                    nom=data['nom'],
+                    contact=data['contact'],
+                    email=email,
+                    adresse=data['adresse']
+                )
+                print(">>>> FOURNISSEUR CRÉÉ", fournisseur.pk, fournisseur.nom)
+                messages.success(request, "Fournisseur ajouté avec succès.")
+                return redirect('fournisseur_list')
+            except Exception as e:
+                print(">>>> ERREUR FOURNISSEUR", e)
+                traceback.print_exc()
+                form.add_error(None, f"Erreur fournisseur: {e}")
+                return render(request, 'add_fournisseur.html', {'form': form})
+        else:
+            print(">>>> FORM NOT VALID", form.errors)
+            # Affiche les erreurs dans le template
+            for field, errs in form.errors.items():
+                for err in errs:
+                    form.add_error(field, err)
+    else:
+        form = FournisseurUserForm()
+    return render(request, 'add_fournisseur.html', {'form': form})@login_required
+@user_passes_test(is_gestionnaire)
+def add_fournisseur(request):
+    import traceback
+    if request.method == "POST":
+        form = FournisseurUserForm(request.POST)
+        print(">>>> FORM POSTED", request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            print(">>>> FORM IS VALID", data)
+            User = get_user_model()
+            user = None
+            username = data.get('username')
+            password = data.get('password')
+            email = data.get('email')
+            if username and password:
+                try:
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        email=email,
+                        role='fournisseur'
+                    )
+                    print(">>>> USER CREATED", user)
+                except Exception as e:
+                    print(">>>> ERREUR CRÉATION USER", e)
+                    traceback.print_exc()
+                    form.add_error(None, f"Erreur création user: {e}")
+                    return render(request, 'add_fournisseur.html', {'form': form})
+            try:
+                fournisseur = Fournisseur.objects.create(
+                    user=user,
+                    nom=data['nom'],
+                    contact=data['contact'],
+                    email=email,
+                    adresse=data['adresse']
+                )
+                print(">>>> FOURNISSEUR CRÉÉ", fournisseur.pk, fournisseur.nom)
+                messages.success(request, "Fournisseur ajouté avec succès.")
+                return redirect('fournisseur_list')
+            except Exception as e:
+                print(">>>> ERREUR FOURNISSEUR", e)
+                traceback.print_exc()
+                form.add_error(None, f"Erreur fournisseur: {e}")
+                return render(request, 'add_fournisseur.html', {'form': form})
+        else:
+            print(">>>> FORM NOT VALID", form.errors)
+            # Affiche les erreurs dans le template
+            for field, errs in form.errors.items():
+                for err in errs:
+                    form.add_error(field, err)
     else:
         form = FournisseurUserForm()
     return render(request, 'add_fournisseur.html', {'form': form})
@@ -715,11 +808,7 @@ from .utils import generate_openai_report
 
 def is_manager(user):
     return getattr(user, "role", "") in ("gestionnaire", "admin")
-from openai.error import RateLimitError
-from .models import Article, MouvementStock
-from .utils import generate_report
-from openai.error import RateLimitError, OpenAIError    
-from .utils import generate_report  # votre fonction wrapper OpenAI
+ # votre fonction wrapper OpenAI
 
 def is_manager(user):
     return getattr(user, "role", "") in ("gestionnaire", "admin")
@@ -767,3 +856,4 @@ def report_ai_view(request):
         "sections":     sections,
         "error":        error,
     })
+    

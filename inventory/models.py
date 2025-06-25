@@ -49,7 +49,7 @@ class Fournisseur(models.Model):
     )
     nom     = models.CharField(max_length=100)
     contact = models.CharField(max_length=20)
-    email   = models.EmailField(unique=True)
+    email   = models.EmailField(unique=False)
     adresse = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):

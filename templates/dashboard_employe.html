@@ -32,360 +32,49 @@
       --bg-sidebar: #0f172a;
       --bg-main: #f8fafc;
     }
-
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--bg-main);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* Modern Glassmorphism Sidebar */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 280px;
-      height: 100vh;
-      background: var(--bg-sidebar);
-      backdrop-filter: blur(10px);
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-      z-index: 1000;
-      transition: all 0.3s ease;
-    }
-
-    .sidebar-logo {
-      padding: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: linear-gradient(to right, rgba(37, 99, 235, 0.1), transparent);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar-logo i {
-      font-size: 1.5rem;
-      color: var(--primary-lighter);
-    }
-
-    .sidebar-logo span {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--white);
-      letter-spacing: 0.5px;
-    }
-
-    .sidebar-profile {
-      padding: 1.5rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary-light), var(--primary));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--white);
-      font-size: 1.25rem;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
-
-    .profile-info {
-      flex: 1;
-    }
-
-    .profile-name {
-      color: var(--white);
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .profile-role {
-      color: var(--gray-light);
-      font-size: 0.9rem;
-    }
-
-    .sidebar-nav {
-      padding: 1.5rem 0;
-    }
-
-    .nav-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .nav-section-title {
-      color: var(--gray-light);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 0.75rem 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      padding: 0.875rem 2rem;
-      color: var(--gray-light);
-      font-weight: 500;
-      transition: all 0.2s ease;
-      position: relative;
-      text-decoration: none;
-    }
-
-    .nav-link:hover,
-    .nav-link.active {
-      color: var(--white);
-      background: rgba(37, 99, 235, 0.1);
-    }
-
-    .nav-link.active {
-      background: linear-gradient(to right, var(--primary), transparent);
-      border-right: 3px solid var(--primary-lighter);
-    }
-
-    .nav-link i {
-      width: 1.5rem;
-      font-size: 1.1rem;
-      margin-right: 1rem;
-      color: var(--primary-lighter);
-    }
-
-    .nav-badge {
-      background: var(--danger);
-      color: var(--white);
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.5rem;
-      margin-left: auto;
-    }
-
-    /* Main Content Area */
-    .main-content {
-      margin-left: 280px;
-      padding: 2rem;
-      min-height: 100vh;
-    }
-
-    /* Welcome Section */
-    .welcome-section {
-      background: var(--white);
-      border-radius: 1.5rem;
-      padding: 2.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .welcome-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 300px;
-      height: 300px;
-      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
-      border-radius: 50%;
-      transform: translate(150px, -150px);
-      z-index: 0;
-    }
-
-    .welcome-title {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--dark);
-      margin-bottom: 1rem;
-      position: relative;
-    }
-
-    .welcome-subtitle {
-      color: var(--gray);
-      font-size: 1.1rem;
-      max-width: 600px;
-      position: relative;
-    }
-
-    /* Action Cards */
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .action-card {
-      background: var(--white);
-      border-radius: 1.5rem;
-      padding: 2rem;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .action-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-
-    .action-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100px;
-      height: 100px;
-      background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%);
-      border-radius: 50%;
-      transform: translate(50px, -50px);
-      z-index: 0;
-    }
-
-    .action-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 1rem;
-      background: var(--primary-lighter);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      position: relative;
-      transition: all 0.3s ease;
-    }
-
-    .action-card:hover .action-icon {
-      background: var(--primary);
-      color: var(--white);
-      transform: scale(1.1);
-    }
-
-    .action-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--dark);
-      margin-bottom: 0.75rem;
-      position: relative;
-    }
-
-    .action-description {
-      color: var(--gray);
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-
-    /* Buttons */
-    .btn-action {
-      padding: 0.875rem 1.5rem;
-      border-radius: 0.75rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-primary-action {
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
-
-    .btn-primary-action:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
-      color: var(--white);
-    }
-
-    .btn-secondary-action {
-      background: var(--primary-lighter);
-      color: var(--primary);
-      border: none;
-    }
-
-    .btn-secondary-action:hover {
-      background: var(--primary);
-      color: var(--white);
-      transform: translateY(-2px);
-    }
-
-    .btn-danger-action {
-      background: var(--danger-light);
-      color: var(--white);
-      border: none;
-    }
-
-    .btn-danger-action:hover {
-      background: var(--danger);
-      transform: translateY(-2px);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-      
-      .sidebar.show {
-        transform: translateX(0);
-      }
-
-      .main-content {
-        margin-left: 0;
-      }
-
-      .action-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .welcome-section {
-        padding: 1.5rem;
-      }
-
-      .welcome-title {
-        font-size: 1.5rem;
-      }
-
-      .action-card {
-        padding: 1.5rem;
-      }
-    }
-
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .welcome-section {
-      animation: fadeInUp 0.5s ease;
-    }
-
-    .action-card {
-      animation: fadeInUp 0.5s ease backwards;
-    }
-
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-main); min-height: 100vh; overflow-x: hidden; }
+    .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: var(--bg-sidebar); backdrop-filter: blur(10px); border-right: 1px solid rgba(255,255,255,0.1); z-index: 1000; transition: all 0.3s ease; }
+    .sidebar-logo { padding: 2rem; display: flex; align-items: center; gap: 1rem; background: linear-gradient(to right, rgba(37,99,235,0.1), transparent); border-bottom: 1px solid rgba(255,255,255,0.1);}
+    .sidebar-logo i { font-size: 1.5rem; color: var(--primary-lighter);}
+    .sidebar-logo span { font-size: 1.5rem; font-weight: 700; color: var(--white);}
+    .sidebar-profile { padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.1);}
+    .avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--primary-light), var(--primary)); display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 1.25rem; box-shadow: 0 4px 12px rgba(37,99,235,0.2);}
+    .profile-info { flex: 1; }
+    .profile-name { color: var(--white); font-weight: 600; font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .profile-role { color: var(--gray-light); font-size: 0.9rem;}
+    .sidebar-nav { padding: 1.5rem 0;}
+    .nav-section { margin-bottom: 1.5rem;}
+    .nav-section-title { color: var(--gray-light); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.75rem 2rem; margin-bottom: 0.5rem;}
+    .nav-link { display: flex; align-items: center; padding: 0.875rem 2rem; color: var(--gray-light); font-weight: 500; transition: all 0.2s ease; position: relative; text-decoration: none;}
+    .nav-link:hover,.nav-link.active { color: var(--white); background: rgba(37,99,235,0.1);}
+    .nav-link.active { background: linear-gradient(to right, var(--primary), transparent); border-right: 3px solid var(--primary-lighter);}
+    .nav-link i { width: 1.5rem; font-size: 1.1rem; margin-right: 1rem; color: var(--primary-lighter);}
+    .nav-badge { background: var(--danger); color: var(--white); font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.5rem; margin-left: auto;}
+    .main-content { margin-left: 280px; padding: 2rem; min-height: 100vh;}
+    .welcome-section { background: var(--white); border-radius: 1.5rem; padding: 2.5rem; margin-bottom: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.05); position: relative; overflow: hidden;}
+    .welcome-section::before { content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%); border-radius: 50%; transform: translate(150px, -150px); z-index: 0;}
+    .welcome-title { font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 1rem;}
+    .welcome-subtitle { color: var(--gray); font-size: 1.1rem; max-width: 600px;}
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;}
+    .action-card { background: var(--white); border-radius: 1.5rem; padding: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.05); transition: all 0.3s ease; position: relative; overflow: hidden;}
+    .action-card:hover { transform: translateY(-5px); box-shadow: 0 8px 32px rgba(0,0,0,0.1);}
+    .action-card::before { content: ''; position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-lightest) 0%, transparent 100%); border-radius: 50%; transform: translate(50px, -50px); z-index: 0;}
+    .action-icon { width: 56px; height: 56px; border-radius: 1rem; background: var(--primary-lighter); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.5rem; position: relative; transition: all 0.3s ease;}
+    .action-card:hover .action-icon { background: var(--primary); color: var(--white); transform: scale(1.1);}
+    .action-title { font-size: 1.25rem; font-weight: 700; color: var(--dark); margin-bottom: 0.75rem;}
+    .action-description { color: var(--gray); margin-bottom: 1.5rem;}
+    .btn-action { padding: 0.875rem 1.5rem; border-radius: 0.75rem; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;}
+    .btn-primary-action { background: var(--primary); color: var(--white); border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);}
+    .btn-primary-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.25); color: var(--white);}
+    .btn-secondary-action { background: var(--primary-lighter); color: var(--primary); border: none;}
+    .btn-secondary-action:hover { background: var(--primary); color: var(--white); transform: translateY(-2px);}
+    .btn-danger-action { background: var(--danger-light); color: var(--white); border: none;}
+    .btn-danger-action:hover { background: var(--danger); transform: translateY(-2px);}
+    @media (max-width: 1024px) { .sidebar { transform: translateX(-100%);} .sidebar.show { transform: translateX(0);} .main-content { margin-left: 0;} .action-grid { grid-template-columns: 1fr;} }
+    @media (max-width: 768px) { .welcome-section { padding: 1.5rem;} .welcome-title { font-size: 1.5rem;} .action-card { padding: 1.5rem;} }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0);} }
+    .welcome-section { animation: fadeInUp 0.5s ease;}
+    .action-card { animation: fadeInUp 0.5s ease backwards;}
     .action-card:nth-child(1) { animation-delay: 0.1s; }
     .action-card:nth-child(2) { animation-delay: 0.2s; }
     .action-card:nth-child(3) { animation-delay: 0.3s; }
@@ -394,13 +83,29 @@
   </style>
 </head>
 <body>
+  <!-- Modale Bootstrap réutilisable pour tous les contenus dynamiques -->
+  <div class="modal fade" id="popModal" tabindex="-1" aria-labelledby="popModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-md-down">
+      <div class="modal-content" style="border-radius:2rem; overflow:hidden;">
+        <div class="modal-header border-0" style="background: linear-gradient(90deg, #2563eb 0%, #20c997 100%); color:white;">
+          <h5 class="modal-title" id="popModalLabel"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body p-0" id="popModalBody" style="background: #f8fafc; min-height:300px;">
+          <div class="d-flex justify-content-center align-items-center" style="height:300px;">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <i class="fas fa-warehouse"></i>
       <span>GestionStock</span>
     </div>
-    
     <div class="sidebar-profile">
       <div class="avatar">
         <i class="fas fa-user"></i>
@@ -410,27 +115,26 @@
         <div class="profile-role">Espace personnel</div>
       </div>
     </div>
-
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-title">Principal</div>
-        <a href="#" class="nav-link active">
+        <a href="dashboard_employe.html" class="nav-link active" id="nav-dashboard">
           <i class="fas fa-home"></i>
           <span>Tableau de bord</span>
         </a>
-        <a href="{% url 'product_list' %}" class="nav-link">
+        
+        <a href="{% url 'product_list' %}" class="nav-link open-modal" data-title="Catalogue Articles">
           <i class="fas fa-boxes-stacked"></i>
           <span>Articles</span>
         </a>
       </div>
-
       <div class="nav-section">
         <div class="nav-section-title">Demandes</div>
-        <a href="{% url 'faire_demande' %}" class="nav-link">
+        <a href="{% url 'faire_demande' %}" class="nav-link open-modal" data-title="Nouvelle demande">
           <i class="fas fa-plus-circle"></i>
           <span>Nouvelle demande</span>
         </a>
-        <a href="{% url 'mes_demandes' %}" class="nav-link">
+        <a href="{% url 'mes_demandes' %}" class="nav-link open-modal" data-title="Mes demandes">
           <i class="fas fa-folder-open"></i>
           <span>Mes demandes</span>
           {% if nb_demandes_en_attente and nb_demandes_en_attente > 0 %}
@@ -438,20 +142,18 @@
           {% endif %}
         </a>
       </div>
-
       <div class="nav-section">
         <div class="nav-section-title">Communication</div>
-        <a href="{% url 'msg' %}" class="nav-link">
+        <a href="{% url 'msg' %}" class="nav-link open-modal" data-title="Messages">
           <i class="fas fa-envelope"></i>
           <span>Messages</span>
         </a>
-        <a href="{% url 'complete_profile' %}" class="nav-link">
+        <a href="{% url 'complete_profile' %}" class="nav-link open-modal" data-title="Mon profil">
           <i class="fas fa-user-cog"></i>
           <span>Mon profil</span>
         </a>
       </div>
     </nav>
-
     <form method="post" action="{% url 'log_out' %}" class="px-4 mt-auto mb-4">
       {% csrf_token %}
       <button type="submit" class="btn btn-danger-action w-100">
@@ -463,7 +165,6 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Welcome Section -->
     <section class="welcome-section">
       <h1 class="welcome-title">
         <i class="fas fa-user-tie me-3"></i>
@@ -473,8 +174,6 @@
         Gérez efficacement vos demandes d'articles et accédez à toutes vos fonctionnalités depuis votre espace personnel.
       </p>
     </section>
-
-    <!-- Action Cards -->
     <div class="action-grid">
       <!-- Articles -->
       <div class="action-card">
@@ -485,12 +184,11 @@
         <p class="action-description">
           Accédez à l'inventaire complet et consultez la disponibilité en temps réel de tous les articles.
         </p>
-        <a href="{% url 'product_list' %}" class="btn btn-primary-action">
+        <a href="{% url 'product_list' %}" class="btn btn-primary-action open-modal" data-title="Catalogue Articles">
           <i class="fas fa-eye"></i>
           <span>Consulter le catalogue</span>
         </a>
       </div>
-
       <!-- Nouvelle demande -->
       <div class="action-card">
         <div class="action-icon">
@@ -500,12 +198,11 @@
         <p class="action-description">
           Créez une nouvelle demande d'articles auprès de votre gestionnaire de stock.
         </p>
-        <a href="{% url 'faire_demande' %}" class="btn btn-primary-action">
+        <a href="{% url 'faire_demande' %}" class="btn btn-primary-action open-modal" data-title="Nouvelle Demande">
           <i class="fas fa-paper-plane"></i>
           <span>Créer une demande</span>
         </a>
       </div>
-
       <!-- Suivi demandes -->
       <div class="action-card">
         <div class="action-icon">
@@ -516,7 +213,7 @@
           Suivez l'état de vos demandes en cours et consultez l'historique complet.
         </p>
         <div class="d-flex flex-column gap-2">
-          <a href="{% url 'mes_demandes' %}" class="btn btn-primary-action">
+          <a href="{% url 'mes_demandes' %}" class="btn btn-primary-action open-modal" data-title="Suivi des Demandes">
             <i class="fas fa-list"></i>
             <span>Voir mes demandes</span>
           </a>
@@ -528,7 +225,6 @@
           {% endif %}
         </div>
       </div>
-
       <!-- Messagerie -->
       <div class="action-card">
         <div class="action-icon">
@@ -538,12 +234,11 @@
         <p class="action-description">
           Communiquez avec l'équipe et suivez vos notifications importantes.
         </p>
-        <a href="{% url 'msg' %}" class="btn btn-secondary-action">
+        <a href="{% url 'msg' %}" class="btn btn-secondary-action open-modal" data-title="Messagerie">
           <i class="fas fa-envelope-open-text"></i>
           <span>Accéder à la messagerie</span>
         </a>
       </div>
-
       <!-- Profil -->
       <div class="action-card">
         <div class="action-icon">
@@ -553,7 +248,7 @@
         <p class="action-description">
           Gérez vos informations personnelles et vos préférences de compte.
         </p>
-        <a href="{% url 'complete_profile' %}" class="btn btn-secondary-action">
+        <a href="{% url 'complete_profile' %}" class="btn btn-secondary-action open-modal" data-title="Paramètres du Profil">
           <i class="fas fa-user-edit"></i>
           <span>Modifier mon profil</span>
         </a>
@@ -563,19 +258,67 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Mobile sidebar toggle
     document.addEventListener('DOMContentLoaded', function() {
+      // SIDEBAR: Gérer la classe active quand pop-up
+      let lastActiveId = null;
+
+      // Ouvre la modale pour les liens open-modal (sidebar + cards)
+      document.querySelectorAll('.open-modal').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+
+          // Mettre "active" dans la sidebar si besoin
+          let currentActive = document.querySelector('.sidebar .nav-link.active');
+          if (currentActive) {
+            lastActiveId = currentActive.id;
+            currentActive.classList.remove('active');
+          }
+          // Met "active" sur celui cliqué dans la sidebar
+          if (this.classList.contains('nav-link')) this.classList.add('active');
+
+          // Affiche la modale
+          let title = this.getAttribute('data-title') || this.textContent.trim();
+          document.getElementById('popModalLabel').textContent = title;
+          document.getElementById('popModalBody').innerHTML =
+            '<div class="d-flex justify-content-center align-items-center" style="height:200px"><div class="spinner-border text-primary" role="status"></div></div>';
+          let myModal = new bootstrap.Modal(document.getElementById('popModal'));
+          myModal.show();
+
+          // Charge le contenu via AJAX
+          fetch(this.getAttribute('href'), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(resp => resp.text())
+            .then(html => {
+              document.getElementById('popModalBody').innerHTML = html;
+            })
+            .catch(() => {
+              document.getElementById('popModalBody').innerHTML = '<div class="alert alert-danger m-4">Erreur de chargement du contenu</div>';
+            });
+        });
+      });
+
+      // Quand la modale se ferme, restaure l'état "active" du sidebar
+        document.getElementById('popModal').addEventListener('hidden.bs.modal', function () {
+          document.querySelectorAll('.sidebar .nav-link').forEach(function(el) {
+            el.classList.remove('active');
+          });
+          if (lastActiveId) {
+            let prev = document.getElementById(lastActiveId);
+            if (prev) prev.classList.add('active');
+          } else if (document.getElementById('nav-dashboard')) {
+            document.getElementById('nav-dashboard').classList.add('active');
+          }
+        });
+
+
+      // Mobile sidebar toggle
       const toggleButton = document.createElement('button');
       toggleButton.className = 'btn btn-primary position-fixed d-lg-none';
       toggleButton.style.cssText = 'top: 1rem; left: 1rem; z-index: 1100;';
       toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
       document.body.appendChild(toggleButton);
-
       toggleButton.addEventListener('click', function() {
         document.querySelector('.sidebar').classList.toggle('show');
       });
-
-      // Close sidebar when clicking outside on mobile
       document.addEventListener('click', function(e) {
         const sidebar = document.querySelector('.sidebar');
         const button = document.querySelector('.btn-primary.position-fixed');
