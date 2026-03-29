@@ -4,51 +4,35 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import CustomUser, Article, Fournisseur, Commande, Avoir, Stock, Rapport
 
-# --- 1) Enregistrement de CustomUser via @admin.register ---
-
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-
-    list_display = (
-        "username",
-        "email",
-        "secondary_email",
-        "role",
-        "is_staff",
-        "is_active",
+    list_display = ('username', 'email', 'role', 'is_staff', 'is_active',)
+    list_filter = ('role', 'is_staff', 'is_active',)
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Role', {'fields': ('role',)}),
     )
-
-    fieldsets = UserAdmin.fieldsets + (
-        (_("E-mail secondaire (2FA)"), {
-            "fields": ("secondary_email",),
-        }),
-        (_("Rôle de l'utilisateur"), {
-            "fields": ("role",),
-        }),
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'role', 'is_staff', 'is_active')}
+        ),
     )
+    search_fields = ('username', 'email')
+    ordering = ('username',)
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (_("E-mail secondaire (2FA)"), {
-            "classes": ("wide",),
-            "fields": ("secondary_email",),
-        }),
-        (_("Rôle de l'utilisateur"), {
-            "classes": ("wide",),
-            "fields": ("role",),
-        }),
-    )
-
-    search_fields = ("username", "email", "secondary_email")
-    list_filter = ("is_staff", "is_active", "role")
-
-
-# --- 2) Enregistrements des autres modèles ---
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ("nom", "quantite", "facteur_co2")
-    search_fields = ("nom",)
-
+    list_display = ('nom', 'reference', 'get_stock', 'stock_min', 'facteur_co2')
+    search_fields = ('nom', 'reference')
+    list_filter = ('stock_min',)
+    
+    def get_stock(self, obj):
+        return obj.stock
+    get_stock.short_description = 'Stock actuel'
 
 admin.site.register(Fournisseur)
 admin.site.register(Commande)

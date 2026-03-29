@@ -1,4 +1,4 @@
-# carbone/views.py
+
 from django.shortcuts import render
 import plotly.graph_objs as go
 import plotly.offline as opy     
@@ -45,4 +45,7 @@ def dashboard_carbone(request):
     else:
         graph_div = "<div style='text-align:center;color:#b8bcc2;font-size:1.2rem;margin:2.5rem'>Aucune donnée carbone disponible.<br>Ajoutez des articles et leur facteur CO₂ pour visualiser les statistiques.</div>"
 
-    return render(request, "dashboard.html", {"graph_div": graph_div})
+    return render(request, "dashboard.html", {
+    "graph_div": graph_div,
+    "articles_data": data,
+    })

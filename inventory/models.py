@@ -4,18 +4,14 @@ from django.conf import settings
 from django.utils import timezone
 import random, string
 from datetime import timedelta
-from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import Q
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
+from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-
-# Utilisateur personnalisé avec rôles
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Administrateur'),
@@ -27,7 +23,6 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
-    # Garder une seule définition de secondary_email :
     secondary_email = models.EmailField(
         "Email secondaire (2FA)",
         max_length=254,
@@ -39,13 +34,13 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
-# Fournisseur
+
 class Fournisseur(models.Model):
     user = models.OneToOneField(
         CustomUser, on_delete=models.CASCADE,
         limit_choices_to={'role': 'fournisseur'},
         related_name='fournisseur_profile',
-        null=True, blank=True  # ← autorise les fournisseurs sans user
+        null=True, blank=True
     )
     nom     = models.CharField(max_length=100)
     contact = models.CharField(max_length=20)
@@ -55,8 +50,6 @@ class Fournisseur(models.Model):
     def __str__(self):
         return self.nom
 
-
-# Article
 class Article(models.Model):
     nom           = models.CharField(max_length=200)
     reference     = models.CharField(max_length=100, unique=True)
@@ -75,7 +68,7 @@ class Article(models.Model):
         return f"{self.nom} ({self.reference})"
 
 def save(self, *args, **kwargs):
-    if self.pk:  # L'article existe déjà → on met à jour le stock si la quantité a changé
+    if self.pk:
         old = Article.objects.get(pk=self.pk)
         delta = self.quantite - old.quantite
         self.stock += delta
@@ -83,54 +76,51 @@ def save(self, *args, **kwargs):
         self.stock = self.quantite
     super().save(*args, **kwargs)
 
-        # Alerte de stock critique
     if self.stock < self.stock_min and not self.alerte_stock_faible_envoyee:
-            self.envoyer_alerte_stock_critique()
-            Article.objects.filter(pk=self.pk).update(alerte_stock_faible_envoyee=True)
-        
+        self.envoyer_alerte_stock_critique()
+        Article.objects.filter(pk=self.pk).update(alerte_stock_faible_envoyee=True)
     elif self.stock >= self.stock_min and self.alerte_stock_faible_envoyee:
-            Article.objects.filter(pk=self.pk).update(alerte_stock_faible_envoyee=False)
+        Article.objects.filter(pk=self.pk).update(alerte_stock_faible_envoyee=False)
 
 def envoyer_alerte_stock_critique(self):
-        User = get_user_model()
-        destinataires = User.objects.filter(
-            role="gestionnaire",
-            is_active=True,
-            secondary_email__isnull=False
-        ).values_list("secondary_email", flat=True)
+    User = get_user_model()
+    destinataires = User.objects.filter(
+        role="gestionnaire",
+        is_active=True,
+        secondary_email__isnull=False
+    ).values_list("secondary_email", flat=True)
 
-        if not destinataires:
-            return
+    if not destinataires:
+        return
 
-        sujet = f"⚠️ Alerte stock critique : {self.nom}"
-        corps = (
-            f"Bonjour,\n\n"
-            f"L’article « {self.nom} » (Réf : {self.reference}) est à un niveau critique.\n"
-            f"Quantité actuelle : {self.stock} unités (Seuil minimal : {self.stock_min}).\n\n"
-            f"Merci de réapprovisionner dès que possible.\n\n"
-            f"Cordialement,\n"
-            f"GestionStock PRO"
-        )
+    sujet = f"⚠️ Alerte stock critique : {self.nom}"
+    corps = (
+        f"Bonjour,\n\n"
+        f"L’article « {self.nom} » (Réf : {self.reference}) est à un niveau critique.\n"
+        f"Quantité actuelle : {self.stock} unités (Seuil minimal : {self.stock_min}).\n\n"
+        f"Merci de réapprovisionner dès que possible.\n\n"
+        f"Cordialement,\n"
+        f"GestionStock PRO"
+    )
 
-        send_mail(
-            sujet,
-            corps,
-            settings.DEFAULT_FROM_EMAIL,
-            list(destinataires),
-            fail_silently=False,
-        )
+    send_mail(
+        sujet,
+        corps,
+        settings.DEFAULT_FROM_EMAIL,
+        list(destinataires),
+        fail_silently=False,
+    )
 
 def envoyer_alerte_stock_critique(self, declencheur=None):
     User = get_user_model()
 
     if not declencheur:
-        return  # Aucun utilisateur identifié pour déclencher
+        return
 
     role = declencheur.role
     article_nom = self.nom
     article_ref = self.reference
 
-    # Sujet et message personnalisés selon le rôle
     if role == "gestionnaire":
         sujet = f"⚠️ Alerte Stock Critique : {article_nom}"
         corps = (
@@ -148,10 +138,8 @@ def envoyer_alerte_stock_critique(self, declencheur=None):
             f"Cordialement,\nGestionStock PRO"
         )
     else:
-        # Autres rôles → on n'envoie rien
         return
 
-    # Envoi uniquement si secondary_email est défini
     email = declencheur.secondary_email
     if email:
         send_mail(
@@ -161,7 +149,7 @@ def envoyer_alerte_stock_critique(self, declencheur=None):
             [email],
             fail_silently=False
         )
-# Mouvements de stock
+
 class Stock(models.Model):
     article      = models.ForeignKey(
         Article,
@@ -178,7 +166,6 @@ class Stock(models.Model):
     def __str__(self):
         return f"MvtStock {self.id} : {self.article.nom} +{self.entree}/-{self.sortie}"
 
-# Commande et détails
 class Commande(models.Model):
     date       = models.DateField(auto_now_add=True)
     etat       = models.CharField(max_length=100)
@@ -195,7 +182,6 @@ class Commande(models.Model):
         )
 
 class Avoir(models.Model):
-    
     commande = models.ForeignKey(Commande, on_delete=models.CASCADE, related_name='articles_commande')
     article  = models.ForeignKey(Article, on_delete=models.CASCADE)
     quantite = models.PositiveIntegerField()
@@ -203,7 +189,6 @@ class Avoir(models.Model):
     def __str__(self):
         return f"{self.quantite} x {self.article.nom} (Cmd {self.commande.id})"
 
-# Rapport IA
 class Rapport(models.Model):
     titre         = models.CharField(max_length=100)
     date_creation = models.DateTimeField(auto_now_add=True)
@@ -213,7 +198,6 @@ class Rapport(models.Model):
     def __str__(self):
         return f"{self.titre} ({self.date_creation.date()})"
 
-# Messagerie interne
 class Message(models.Model):
     sender    = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
     receiver  = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_messages')
@@ -224,7 +208,6 @@ class Message(models.Model):
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
 
-# 2FA
 class TwoFactorCode(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
@@ -247,6 +230,7 @@ class TwoFactorCode(models.Model):
         code = cls.generate_code()
         expiration_time = timezone.now() + timedelta(minutes=10)
         return cls.objects.create(user=user, code=code, expiration_time=expiration_time)
+
 class UserProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -258,8 +242,6 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} — Profil"
-
-
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -300,7 +282,6 @@ class MouvementStock(models.Model):
         return self.quantite if self.type_mouvement == 'sortie' else 0
 
 def save(self, *args, **kwargs):
-    # Annule l'effet de l'ancien mouvement si modification
     if self.pk:
         ancien = MouvementStock.objects.get(pk=self.pk)
         if ancien.type_mouvement == 'entree':
@@ -308,23 +289,20 @@ def save(self, *args, **kwargs):
         else:
             self.article.stock += ancien.quantite
 
-    # Applique le nouveau mouvement
     if self.type_mouvement == 'entree':
         self.article.stock += self.quantite
-    else:  # sortie
+    else:
         if self.quantite > self.article.stock:
             raise ValueError("Stock insuffisant pour effectuer la sortie.")
         self.article.stock -= self.quantite
 
-    # Sauvegarde l'article
     self.article.save()
     super().save(*args, **kwargs)
 
-    # Alerte si stock < 10
     if self.article.stock < 10 and self.user:
         destinataire = self.user.secondary_email
         if not destinataire:
-            return  # Pas d'email secondaire défini
+            return
 
         role = self.user.role
         sujet = f"⚠️ Alerte : Stock faible pour « {self.article.nom} »"
@@ -346,7 +324,7 @@ def save(self, *args, **kwargs):
                 f"Cordialement,\nGestionStock PRO"
             )
         else:
-            return  # autre rôle : pas d'envoi
+            return
 
         send_mail(
             sujet,
@@ -356,20 +334,26 @@ def save(self, *args, **kwargs):
             fail_silently=False,
         )
 
+from django.db import models
+from django.conf import settings
 class DemandeArticle(models.Model):
     STATUT_CHOICES = [
         ('en_attente', 'En attente'),
         ('approuvee', 'Approuvée'),
         ('refusee', 'Refusée'),
     ]
-
-    employe = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'role': 'employe'})
+    employe = models.ForeignKey('CustomUser', on_delete=models.CASCADE)  
+    gestionnaire = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='demandes_reçues',
+        limit_choices_to={'role': 'gestionnaire'},
+        verbose_name="Gestionnaire destinataire"
+    )
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     quantite = models.PositiveIntegerField()
-    # Si tu as un modèle Categorie, garde-le, sinon retire ce champ :
     date_demande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
 
     def __str__(self):
         return f"{self.article.nom} ({self.quantite}) par {self.employe.username}"
-

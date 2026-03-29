@@ -399,6 +399,28 @@
         </style>
     </head>
     <body>
+        {% if messages %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      {% for message in messages %}
+        // Simple Toast Bootstrap 5
+        let toastDiv = document.createElement('div');
+        toastDiv.className = 'toast align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 m-4 show';
+        toastDiv.role = 'alert';
+        toastDiv.innerHTML = `
+          <div class="d-flex">
+            <div class="toast-body">
+              {{ message|escapejs }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        `;
+        document.body.appendChild(toastDiv);
+        setTimeout(() => toastDiv.remove(), 3500);
+      {% endfor %}
+    });
+  </script>
+{% endif %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-cubes"></i> GestionStock PRO</a>
@@ -483,7 +505,7 @@
                                         '{{ article.nom }}',
                                         '{{ article.reference }}',
                                         '{{ article.prix }}',
-                                        '{{ article.quantite }}'  /* on passe quantite ici */
+                                        '{{ article.stock }}'  /* on passe quantite ici */
                                     )">
                                     <i class="fa-solid fa-eye animated-icon"></i>
                                 </button>

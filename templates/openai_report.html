@@ -1,43 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport IA — Analyse de votre stock</title>
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome CDN (pour icônes robots, etc.) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Petite animation (optionnelle) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body { background: #f6f9fc; }
+    .card { border-radius: 1.1rem; }
+    .card-header { font-size: 1.15rem; }
+    .btn-primary {
+      background: linear-gradient(90deg, #276EF1, #3ddad7);
+      border: none;
+      font-weight: 600;
+      letter-spacing: .03em;
+      box-shadow: 0 3px 16px rgba(38, 110, 241, 0.13);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #1b4ecb, #2bbdb3);
+    }
+    .report-section h2 { color: #276EF1; }
+    .spinner-border { vertical-align: middle; }
+    /* Responsive */
+    @media (max-width: 576px) {
+      h1 { font-size: 1.5rem; }
+      .card-header, .btn-primary { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
 
-{% block content %}
-<div class="container my-5">
-  <h1 class="mb-4">Génération de rapport IA</h1>
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="fw-bold text-primary mb-2 animate__animated animate__fadeInDown">
+        <i class="fas fa-robot me-2"></i> Rapport IA — Analyse de votre stock
+      </h1>
+      <hr class="w-25 mx-auto" style="border-top:3px solid #276EF1;">
+    </div>
 
-  {# ─── Formulaire de génération ──────────────────────── #}
-  <form method="post" class="mb-4">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">
-      <i class="fas fa-robot me-2"></i>Générer le rapport
-    </button>
-  </form>
-
-  {# ─── Affichage d’une erreur éventuelle ─────────────── #}
-  {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
-
-  {# ─── Toujours afficher le résumé ───────────────────── #}
-  <h2 class="h4">Résumé des mouvements de stock</h2>
-  <ul class="list-group mb-4">
-    {% for line in data_summary %}
-      <li class="list-group-item">{{ line }}</li>
-    {% endfor %}
-  </ul>
-
-  {# ─── Si on a généré un rapport, on l’affiche ──────── #}
-  {% if sections %}
-    <h2 class="h4">Rapport généré</h2>
-    {% for sec in sections %}
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          {{ sec|linebreaks }}
+    <!-- Générer bouton + loader -->
+    <div class="card shadow-sm mb-4 border-0">
+      <div class="card-body d-flex align-items-center justify-content-between flex-wrap">
+        <form id="ia-report-form" method="post" action="{% url 'openai_report' %}" class="mb-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary px-4" id="generate-btn">
+            <i class="fas fa-robot me-2"></i> Générer le rapport IA
+          </button>
+        </form>
+        <div id="loader" class="ms-3 d-none">
+          <span class="spinner-border spinner-border-sm text-primary"></span>
+          <span class="ms-2 text-primary">Génération du rapport...</span>
         </div>
       </div>
-    {% endfor %}
-  {% elif not error %}
-    <div class="alert alert-info">
-      Cliquez sur « Générer le rapport » pour lancer l’appel à OpenAI.
     </div>
-  {% endif %}
-</div>
-{% endblock %}
+
+    <!-- Error / Info -->
+    {% if error %}
+      <div class="alert alert-danger shadow-sm">{{ error|safe }}</div>
+    {% endif %}
+
+    <!-- Aperçu des articles -->
+    <div class="card border-info shadow-sm mb-4">
+      <div class="card-header bg-info text-white fw-bold">
+        <i class="fas fa-boxes-stacked me-1"></i> Aperçu de vos articles
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for line in data_summary %}
+          <li class="list-group-item">{{ line }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Rapport généré -->
+    {% if rapport_texte %}
+    <div class="card border-success shadow-lg mb-4 animate__animated animate__fadeIn">
+      <div class="card-header bg-success text-white fw-bold">
+        <i class="fas fa-chart-line me-2"></i> Rapport généré par OpenAI
+      </div>
+      <div class="card-body report-section">
+        <div style="white-space:pre-line; font-family: 'Inter', Arial, sans-serif; font-size: 1.08em;">
+          {{ rapport_texte|linebreaksbr|safe }}
+        </div>
+      </div>
+    </div>
+    {% elif not error %}
+      <div class="alert alert-info shadow-sm animate__animated animate__fadeIn mb-5">
+        Cliquez sur <b>« Générer le rapport IA »</b> pour obtenir un diagnostic personnalisé de votre stock.
+      </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Bootstrap & JS (pour AJAX loader) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Animation du loader au clic sur Générer
+    document.getElementById('ia-report-form').addEventListener('submit', function() {
+      document.getElementById('generate-btn').disabled = true;
+      document.getElementById('loader').classList.remove('d-none');
+    });
+  </script>
+</body>
+</html>

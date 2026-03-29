@@ -387,7 +387,7 @@
             Tableau de bord
           </a>
         {% endif %}
-        <a href="{% url 'product_list' %}" class="nav-link">
+        <a href="{% url 'articles' %}" class="nav-link">
           <i class="fas fa-box"></i>
           Articles
         </a>
@@ -479,65 +479,3 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Recherche en temps réel
-      const searchInput = document.getElementById('searchInput');
-      const userList = document.getElementById('userList');
-
-      if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-          const searchTerm = e.target.value.toLowerCase();
-          const userCards = userList.querySelectorAll('.user-card');
-          let hasResults = false;
-
-          userCards.forEach(card => {
-            const username = card.dataset.username;
-            if (username.includes(searchTerm)) {
-              card.style.display = 'flex';
-              hasResults = true;
-            } else {
-              card.style.display = 'none';
-            }
-          });
-
-          // Afficher/masquer le message "Aucun résultat"
-          let noResults = userList.querySelector('.text-muted');
-          if (!hasResults && !noResults) {
-            const noResultsDiv = document.createElement('div');
-            noResultsDiv.className = 'text-center text-muted mt-4';
-            noResultsDiv.innerHTML = `
-              <i class="fas fa-users-slash fa-2x mb-3"></i>
-              <p>Aucun résultat trouvé</p>
-            `;
-            userList.appendChild(noResultsDiv);
-          } else if (hasResults && noResults) {
-            noResults.remove();
-          }
-        });
-      }
-
-      // Toggle sidebar sur mobile
-      const toggleButton = document.createElement('button');
-      toggleButton.className = 'btn btn-primary position-fixed d-lg-none';
-      toggleButton.style.cssText = 'top: 1rem; left: 1rem; z-index: 1100;';
-      toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
-      document.body.appendChild(toggleButton);
-
-      toggleButton.addEventListener('click', function() {
-        document.querySelector('.sidebar').classList.toggle('show');
-      });
-
-      // Fermer la sidebar en cliquant à l'extérieur
-      document.addEventListener('click', function(e) {
-        const sidebar = document.querySelector('.sidebar');
-        const button = document.querySelector('.btn-primary.position-fixed');
-        
-        if (!sidebar.contains(e.target) && !button.contains(e.target)) {
-          sidebar.classList.remove('show');
-        }
-      });
-    });
-  </script>
-</body>
-</html>

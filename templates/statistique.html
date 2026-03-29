@@ -1,128 +1,300 @@
+
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Statistiques – Gestionnaire</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <div class="container my-5">
-    <h1 class="mb-4"><i class="fas fa-chart-bar"></i> Statistiques de Stock</h1>
-    <div class="row g-4">
 
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Articles par Catégorie</h5>
-            <canvas id="chartCat"></canvas>
-          </div>
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Tableau de bord des statistiques</h2>
+
+    <!-- Cartes des statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Articles totaux</h5>
+                    <p class="card-text" id="total-articles">Chargement...</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Top 10 Articles en Stock</h5>
-            <canvas id="chartTopArticles"></canvas>
-          </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Articles en rupture</h5>
+                    <p class="card-text" id="articles-rupture">Chargement...</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Mouvements de Stock (7 jours)</h5>
-            <canvas id="chartMvts"></canvas>
-          </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Fournisseurs actifs</h5>
+                    <p class="card-text" id="fournisseurs-actifs">Chargement...</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title">Commandes par Fournisseur</h5>
-            <canvas id="chartFourn"></canvas>
-          </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Commandes en cours</h5>
+                    <p class="card-text" id="commandes-cours">Chargement...</p>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="col-12">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title text-danger">Articles en rupture</h5>
-            <div id="ruptureList"></div>
-          </div>
-        </div>
-      </div>
-
     </div>
-    <a href="{% url 'dashboard_gestionnaire' %}" class="btn btn-secondary mt-4">Retour au tableau de bord</a>
-  </div>
 
-  <!-- Chart.js JS dynamique -->
-  <script>
-    // Articles par catégorie
-    fetch("{% url 'stats_articles_par_categorie' %}")
-      .then(r => r.json())
-      .then(data => {
-        new Chart(document.getElementById('chartCat'), {
-          type: 'pie',
-          data: { labels: data.labels, datasets: [{ data: data.data }] }
+    <!-- Graphiques -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Evolution des stocks (30 jours)</h5>
+                    <canvas id="evolution-stocks"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Délai moyen de livraison par fournisseur</h5>
+                    <canvas id="delai-livraison"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Impact CO2 par article</h5>
+                    <canvas id="impact-co2"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition des stocks</h5>
+                    <canvas id="stock-minimum"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Fonction utilitaire pour créer un graphique
+function createChart(ctx, type, labels, data, options = {}) {
+    return new Chart(ctx, {
+        type: type,
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            ...options
+        }
+    });
+}
+
+// Charger les statistiques principales
+fetch('{% url "stats_total_articles" %}')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('total-articles').textContent = data.total;
+    });
+
+fetch('{% url "stats_articles_rupture" %}')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('articles-rupture').textContent = data.rupture;
+    });
+
+fetch('{% url "stats_fournisseurs_actifs" %}')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('fournisseurs-actifs').textContent = data.actifs;
+    });
+
+fetch('{% url "stats_commandes_en_cours" %}')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('commandes-cours').textContent = data.en_cours;
+    });
+
+// Evolution des stocks
+fetch('{% url "stats_evolution_stocks" %}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('evolution-stocks').getContext('2d');
+        createChart(ctx, 'line', data.dates, data.variations, {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Variation de stock'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         });
-      });
+    });
 
-    // Top 10 articles
-    fetch("{% url 'stats_top_articles' %}")
-      .then(r => r.json())
-      .then(data => {
-        new Chart(document.getElementById('chartTopArticles'), {
-          type: 'bar',
-          data: {
-            labels: data.labels,
-            datasets: [{ label: 'Quantité', data: data.data, backgroundColor: 'rgba(0,123,255,0.7)' }]
-          }
+// Délai de livraison
+fetch('{% url "stats_delai_livraison" %}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('delai-livraison').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.fournisseurs,
+                datasets: [{
+                    label: 'Délai moyen (jours)',
+                    data: data.delais,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Jours'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
         });
-      });
+    })
+    .catch(error => {
+        console.error('Erreur lors du chargement des délais de livraison:', error);
+        // Afficher un message d'erreur dans le graphique
+        const ctx = document.getElementById('delai-livraison').getContext('2d');
+        ctx.font = '14px Arial';
+        ctx.fillStyle = 'red';
+        ctx.fillText('Erreur de chargement des données', 10, 50);
+    });
 
-    // Mouvements de stock (7 jours)
-    fetch("{% url 'stats_mouvements_stock' %}?jours=7")
-      .then(r => r.json())
-      .then(data => {
-        new Chart(document.getElementById('chartMvts'), {
-          type: 'line',
-          data: {
-            labels: data.labels,
-            datasets: [
-              { label: 'Entrées', data: data.entrees, borderColor: 'green', fill: false },
-              { label: 'Sorties', data: data.sorties, borderColor: 'red', fill: false }
-            ]
-          }
+// Impact CO2
+fetch('{% url "stats_impact_co2" %}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('impact-co2').getContext('2d');
+        createChart(ctx, 'bar', data.articles, data.co2, {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'kg CO₂'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         });
-      });
+    });
 
-    // Commandes par fournisseur
-    fetch("{% url 'stats_commandes_par_fournisseur' %}")
-      .then(r => r.json())
-      .then(data => {
-        new Chart(document.getElementById('chartFourn'), {
-          type: 'bar',
-          data: { labels: data.labels, datasets: [{ label: "Nb commandes", data: data.data }] }
+// Répartition des stocks
+fetch('{% url "stats_stock_minimum" %}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('stock-minimum').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: data.colors,
+                    borderColor: data.colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => ({
+                                        text: label,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        strokeStyle: data.datasets[0].backgroundColor[i],
+                                        lineWidth: 0,
+                                        hidden: false,
+                                        index: i
+                                    }));
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${label} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
         });
-      });
-
-    // Articles en rupture
-    fetch("{% url 'stats_articles_rupture' %}")
-      .then(r => r.json())
-      .then(data => {
-        const list = document.getElementById('ruptureList');
-        list.innerHTML = data.labels.length
-          ? data.labels.map(nom => `<span class="badge bg-danger me-2">${nom}</span>`).join(' ')
-          : "<span class='text-success'>Aucun article en rupture.</span>";
-      });
-  </script>
-</body>
-</html>
+    })
+    .catch(error => {
+        console.error('Erreur lors du chargement de la répartition des stocks:', error);
+        const ctx = document.getElementById('stock-minimum').getContext('2d');
+        ctx.font = '14px Arial';
+        ctx.fillStyle = 'red';
+        ctx.fillText('Erreur de chargement des données', 10, 50);
+    });
+</script>
+{% endblock %}

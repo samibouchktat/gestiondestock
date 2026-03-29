@@ -1,16 +1,13 @@
 import os
-from .models import Article, MouvementStock
-from .utils import generate_report
-#rom openai.error import RateLimitError, OpenAIError    
-from .utils import generate_report 
 from django.db.models import F
 from django.shortcuts import render
 from django.utils.timezone import now
 from django.db.models import F
+from httpx import request
 from .models import Article
 import json
+from django.http import HttpResponse
 import datetime
-from django.db import IntegrityError
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -34,7 +31,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.decorators import login_required
 from django.db.models import F, Sum
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncDate
 from .models import Article, Fournisseur, Stock, Commande
@@ -48,11 +45,14 @@ from django.http import HttpResponse
 import pandas as pd
 from .forms import MouvementForm
 from datetime import datetime
-
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .forms import DemandeArticleForm
+import pytz
 from .models import Article
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
-
+from .utils import generate_report
 from django.http import JsonResponse
 from .forms import ArticleUpdateForm
 AvoirFormSet = inlineformset_factory(Commande, Avoir, fields=('article','quantite'), extra=1, can_delete=True)
@@ -68,22 +68,21 @@ from .forms import (
 )
 from .utils import generate_report
 from django.db.models import F
-from django.shortcuts import render
-from django.conf import settings
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum
-import openai
+
+
+from django.utils import timezone
+import datetime
+
+now = timezone.now()  
 
 def is_manager(user):
     return getattr(user, "role", None) in {"gestionnaire", "admin"}
 
 
-# Page d'accueil
 def home(request):
     return render(request, 'first.html')
 
 
-# Connexion
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -96,7 +95,6 @@ def login_view(request):
 
         login(request, user)
 
-        # Redirection automatique selon user.role
         if user.is_superuser or user.role == "admin":
             return redirect('/admin/')
         elif user.role == "gestionnaire":
@@ -128,16 +126,67 @@ def log_out(request):
     logout(request)
     messages.success(request, "Vous êtes maintenant déconnecté.")
     return redirect('login')
+@login_required
+def dashboard_gestionnaire(request):
+    stock_total = Article.objects.aggregate(total=Sum('stock'))['total'] or 0
+    cmd_count = Commande.objects.filter(etat__in=['en_attente', 'en cours']).count()
+    critical_count = Article.objects.filter(stock__lt=F('stock_min')).count()
+    fourn_count = Fournisseur.objects.count()
+
+    low_stock_items = Article.objects.filter(stock__lt=F('stock_min')).order_by('stock')
+
+    context = {
+        "stock_total": stock_total,
+        "cmd_count": cmd_count,
+        "critical_count": critical_count,
+        "fourn_count": fourn_count,
+        "low_stock_items": low_stock_items,
+    }
+    return render(request, "dashboard_gestionnaire.html", context)
+
 
 
 @login_required
-def dashboard_gestionnaire(request):
-    return render(request, 'dashboard_gestionnaire.html')
+def api_activites_recent(request):
+    casablanca_tz = pytz.timezone('Africa/Casablanca')
+    mouvements = MouvementStock.objects.select_related('article', 'user').order_by('-date')[:5]
+    commandes = Commande.objects.select_related('fournisseur', 'employe').order_by('-date')[:5]
 
+    activites = []
 
+    def to_casablanca_time(dt):
+        if isinstance(dt, datetime.date) and not isinstance(dt, datetime.datetime):
+            dt = datetime.datetime.combine(dt, datetime.time())
+        if dt.tzinfo is None:
+            dt = pytz.UTC.localize(dt)
+        return dt.astimezone(casablanca_tz)
+
+    for m in mouvements:
+        date_locale = to_casablanca_time(m.date)
+        activites.append({
+            'type': 'mouvement',
+            'sous_type': m.type_mouvement,
+            'date': date_locale.strftime('%d/%m/%Y %H:%M'),
+            'titre': f"{'Entrée' if m.type_mouvement == 'entree' else 'Sortie'} de stock",
+            'description': f"{m.quantite} x {m.article.nom} {'ajoutés' if m.type_mouvement == 'entree' else 'sortis'} par {m.user.username if m.user else 'N/A'}",
+        })
+
+    for c in commandes:
+        date_locale = to_casablanca_time(c.date)
+        activites.append({
+            'type': 'commande',
+            'date': date_locale.strftime('%d/%m/%Y %H:%M'),
+            'titre': f"Commande #{c.id}",
+            'description': f"À {c.fournisseur.nom if c.fournisseur else ''} par {c.employe.username if hasattr(c, 'employe') and c.employe else 'N/A'}",
+        })
+
+    activites = sorted(activites, key=lambda x: x['date'], reverse=True)[:7]
+
+    return JsonResponse({'activites': activites})
 @login_required
 def dashboard_employe(request):
     return render(request, 'dashboard_employe.html')
+
 
 
 @login_required
@@ -156,7 +205,6 @@ def dashboard_fournisseur(request):
 
     commandes = Commande.objects.filter(fournisseur=fournisseur)
     
-    # Filtrage
     search = request.GET.get("search", "")
     filtre_etat = request.GET.get("filtre_etat", "")
     if search:
@@ -164,7 +212,6 @@ def dashboard_fournisseur(request):
     if filtre_etat:
         commandes = commandes.filter(etat=filtre_etat)
     
-    # Statistiques
     nb_en_attente = commandes.filter(etat="en_attente").count()
     nb_validees = commandes.filter(etat="validée").count()
     nb_refusees = commandes.filter(etat="refusée").count()
@@ -184,7 +231,6 @@ def dashboard_fournisseur(request):
     }
     return render(request, "dashboard_fournisseur.html", context)
 
-# CRUD Articles
 @never_cache
 @login_required
 def liste_articles(request):
@@ -202,6 +248,7 @@ def is_gestionnaire(user):
 
 @login_required
 @user_passes_test(is_gestionnaire)
+
 def add_product(request):
     if request.method == "POST":
         form = ArticleForm(request.POST)
@@ -210,29 +257,22 @@ def add_product(request):
             article.stock = article.quantite
             article.save()
             messages.success(request, "✅ Produit ajouté avec succès.")
-            return redirect('product_list')  # Vérifie que cette URL existe
+            return redirect('articles')
         else:
             messages.error(request, "❌ Formulaire invalide. Veuillez corriger les erreurs.")
     else:
         form = ArticleForm()
-
     return render(request, 'add_product.html', {'form': form})
-@login_required
-def edit_product(request, id):
-    article = get_object_or_404(Article, id=id)
-    form = ArticleForm(request.POST or None, instance=article)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Produit modifié avec succès.")
-        return redirect('product_list')  # Redirige vers ta liste d’articles
-    return render(request, 'edit_product.html', {'form': form, 'article': article})
+
+
+
 @login_required
 def delete_product(request, id):
     article = get_object_or_404(Article, id=id)
     if request.method == 'POST':
         article.delete()
         messages.success(request, "Produit supprimé avec succès.")
-        return redirect('product_list')
+        return redirect('articles')
     return render(request, 'delete_product.html', {'article': article})
 
 
@@ -246,108 +286,113 @@ def msg(request):
 
 @login_required
 def conversation(request, user_id):
-    current, other = request.user, get_object_or_404(CustomUser, id=user_id)
+    current = request.user
+    other = get_object_or_404(CustomUser, id=user_id)
+    
     if request.method == 'POST':
         content = request.POST.get('content')
         if content:
             Message.objects.create(sender=current, receiver=other, content=content)
             return redirect('conv', user_id=other.id)
+    
     qs = Message.objects.filter(
-        (Q(sender=current)&Q(receiver=other))|
-        (Q(sender=other)&Q(receiver=current))   
+        (Q(sender=current) & Q(receiver=other)) |
+        (Q(sender=other) & Q(receiver=current))
     ).order_by('timestamp')
+    
     paginator = Paginator(qs, 10)
     page = request.GET.get('page')
     messages_page = paginator.get_page(page)
-    return render(request, 'conversation.html', {'other_user': other, 'messages': messages_page})
-
-
-# Vérification OTP email
+    
+    return render(request, 'conversation.html', {
+        'other_user': other,
+        'messages': messages_page,
+        'user': request.user
+    })
 @login_required
 def complete_profile(request):
-    # Si c'est un GET (ou un autre verbe qui n'est pas POST), on réinitialise la clé de session
-    if request.method != "POST":
-        # Supprime la valeur de session si elle existe
-        request.session.pop("otp_email", None)
+    try:
+        if request.method == "GET":
+            if request.GET.get("reset"):
+                request.session.pop("otp_email", None)
+            if "otp_email" in request.session:
+                form = OTPVerificationForm()
+                return render(request, "complete_profile.html", {
+                    "step": "verify",
+                    "email": request.session["otp_email"],
+                    "form": form
+                })
+            else:
+                form = EmailVerificationForm()
+                return render(request, "complete_profile.html", {
+                    "step": "email",
+                    "form": form
+                })
 
-        # Affiche le formulaire de saisie d'email (step 1)
-        form = EmailVerificationForm()
+        if "otp_email" not in request.session:
+            form = EmailVerificationForm(request.POST)
+            print("POST data:", request.POST)
+            print("Form is valid? ", form.is_valid())
+            print("Form errors:", form.errors)
+
+            if form.is_valid():
+                email = form.cleaned_data["email"]
+                code_obj = TwoFactorCode.create_code(request.user)
+                request.session["otp_email"] = email
+                send_mail(
+                    subject="Votre code de vérification",
+                    message=f"Bonjour {request.user.username},\nVotre code est : {code_obj.code}",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                form_code = OTPVerificationForm()
+                return render(request, "complete_profile.html", {
+                    "step": "verify",
+                    "email": email,
+                    "form": form_code
+                })
+            else:
+                return render(request, "complete_profile.html", {
+                    "step": "email",
+                    "form": form
+                })
+
+        email = request.session.get("otp_email")
+        form_code = OTPVerificationForm(request.POST)
+        if form_code.is_valid():
+            code = form_code.cleaned_data["code"]
+            try:
+                otp = TwoFactorCode.objects.get(user=request.user, code=code, is_used=False)
+                if otp.is_valid():
+                    otp.is_used = True
+                    otp.save()
+                    user = request.user
+                    user.secondary_email = email
+                    user.save()
+                    del request.session["otp_email"]
+                    messages.success(request,
+                        f"L'adresse {email} a bien été ajoutée à votre compte. Vous pourrez vous connecter avec cet email ou celui de l'administrateur.")
+                    return redirect("redirect_dashboard")
+                else:
+                    form_code.add_error("code", "Ce code a expiré.")
+            except TwoFactorCode.DoesNotExist:
+                form_code.add_error("code", "Code invalide ou déjà utilisé.")
+
         return render(request, "complete_profile.html", {
-            "step": "email",
-            "form": form
+            "step": "verify",
+            "email": email,
+            "form": form_code
         })
 
-    # À partir d'ici, request.method == "POST"
-
-    # --- Étape 1 : l'utilisateur a soumis le champ email pour recevoir le code ---
-    if "otp_email" not in request.session:
-        form = EmailVerificationForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data["email"]
-
-            # On génère l'objet TwoFactorCode (contenant le code) pour l'utilisateur courant
-            code_obj = TwoFactorCode.create_code(request.user)
-
-            # On stocke en session l'email qui est en cours de vérification
-            request.session["otp_email"] = email
-
-            # On envoie le mail avec le code
-            send_mail(
-                subject="Votre code de vérification",
-                message=f"Bonjour {request.user.username},\nVotre code est : {code_obj.code}",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[email],
-                fail_silently=False,
-            )
-
-            # On prépare le formulaire du pas 2 (vérification du code)
-            form_code = OTPVerificationForm()
-            return render(request, "complete_profile.html", {
-                "step": "verify",
-                "email": email,
-                "form": form_code
-            })
-        else:
-            # Le formulaire EmailVerificationForm n'est pas valide (ex. champ vide, format non valide, etc.)
-            return render(request, "complete_profile.html", {
-                "step": "email",
-                "form": form
-            })
-
-    # --- Étape 2 : l'utilisateur soumet le code reçu par e-mail ---
-    email = request.session.get("otp_email")
-    form_code = OTPVerificationForm(request.POST)
-    if form_code.is_valid():
-        code = form_code.cleaned_data["code"]
-        try:
-            otp = TwoFactorCode.objects.get(user=request.user, code=code, is_used=False)
-            if otp.is_valid():
-                # Le code est encore valide : on marque l'OTP comme utilisé
-                otp.is_used = True
-                otp.save()
-
-                # On rattache l'email secondaire au user
-                user = request.user
-                user.secondary_email = email
-                user.save()
-
-                # On supprime la session
-                del request.session["otp_email"]
-
-                messages.success(request,
-                    f"L'adresse {email} a bien été ajoutée à votre compte. Vous pourrez vous connecter avec cet email ou celui de l'administrateur.")
-                return redirect("redirect_dashboard")
-            else:
-                # Le code est expiré (is_valid() retourne False)
-                form_code.add_error("code", "Ce code a expiré.")
-        except TwoFactorCode.DoesNotExist:
-            form_code.add_error("code", "Code invalide ou déjà utilisé.")
-    # Si on arrive ici, c'est soit parce que form_code n'est pas valide, soit que le code fourni est incorrect/expiré
-    return render(request, "complete_profile.html", {
-        "step": "verify",
-        "email": email,
-        "form": form_code
-    })
+    except Exception as e:
+        import traceback
+        return render(request, "complete_profile.html", {
+            "step": "email",
+            "form": EmailVerificationForm(),
+            "error": traceback.format_exc(),
+        })
+@login_required
 
 
 @login_required
@@ -355,7 +400,6 @@ def commande_list(request):
     commandes = Commande.objects.filter(employe=request.user)
     return render(request, 'commande_list.html', {'commandes': commandes})
 
-# Ajouter une commande avec ses articles
 @login_required
 def add_commande(request):
     if request.method == "POST":
@@ -363,7 +407,7 @@ def add_commande(request):
         formset = AvoirFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             commande = form.save(commit=False)
-            commande.employe = request.user  # Gestionnaire courant
+            commande.employe = request.user
             commande.save()
             formset.instance = commande
             formset.save()
@@ -374,7 +418,6 @@ def add_commande(request):
         formset = AvoirFormSet()
     return render(request, 'add_commande.html', {'form': form, 'formset': formset})
 
-# Détail d'une commande
 @login_required
 def commande_detail(request, id):
     commande = get_object_or_404(Commande, id=id)
@@ -390,115 +433,28 @@ def is_gestionnaire(user):
 @user_passes_test(is_gestionnaire)
 def fournisseur_list(request):
     fournisseurs = Fournisseur.objects.all()
-    print("Fournisseurs trouvés :", fournisseurs.count())
-    for f in fournisseurs:
-        print(f"Fournisseur : {f.pk} {f.nom} | User: {f.user}")
     return render(request, 'fournisseur_list.html', {'fournisseurs': fournisseurs})
-
-@login_required
-@user_passes_test(is_gestionnaire)
 def add_fournisseur(request):
-    import traceback
     if request.method == "POST":
         form = FournisseurUserForm(request.POST)
-        print(">>>> FORM POSTED", request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            print(">>>> FORM IS VALID", data)
             User = get_user_model()
-            user = None
-            username = data.get('username')
-            password = data.get('password')
-            email = data.get('email')
-            if username and password:
-                try:
-                    user = User.objects.create_user(
-                        username=username,
-                        password=password,
-                        email=email,
-                        role='fournisseur'
-                    )
-                    print(">>>> USER CREATED", user)
-                except Exception as e:
-                    print(">>>> ERREUR CRÉATION USER", e)
-                    traceback.print_exc()
-                    form.add_error(None, f"Erreur création user: {e}")
-                    return render(request, 'add_fournisseur.html', {'form': form})
-            try:
-                fournisseur = Fournisseur.objects.create(
-                    user=user,
-                    nom=data['nom'],
-                    contact=data['contact'],
-                    email=email,
-                    adresse=data['adresse']
-                )
-                print(">>>> FOURNISSEUR CRÉÉ", fournisseur.pk, fournisseur.nom)
-                messages.success(request, "Fournisseur ajouté avec succès.")
-                return redirect('fournisseur_list')
-            except Exception as e:
-                print(">>>> ERREUR FOURNISSEUR", e)
-                traceback.print_exc()
-                form.add_error(None, f"Erreur fournisseur: {e}")
-                return render(request, 'add_fournisseur.html', {'form': form})
-        else:
-            print(">>>> FORM NOT VALID", form.errors)
-            # Affiche les erreurs dans le template
-            for field, errs in form.errors.items():
-                for err in errs:
-                    form.add_error(field, err)
-    else:
-        form = FournisseurUserForm()
-    return render(request, 'add_fournisseur.html', {'form': form})@login_required
-@user_passes_test(is_gestionnaire)
-def add_fournisseur(request):
-    import traceback
-    if request.method == "POST":
-        form = FournisseurUserForm(request.POST)
-        print(">>>> FORM POSTED", request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            print(">>>> FORM IS VALID", data)
-            User = get_user_model()
-            user = None
-            username = data.get('username')
-            password = data.get('password')
-            email = data.get('email')
-            if username and password:
-                try:
-                    user = User.objects.create_user(
-                        username=username,
-                        password=password,
-                        email=email,
-                        role='fournisseur'
-                    )
-                    print(">>>> USER CREATED", user)
-                except Exception as e:
-                    print(">>>> ERREUR CRÉATION USER", e)
-                    traceback.print_exc()
-                    form.add_error(None, f"Erreur création user: {e}")
-                    return render(request, 'add_fournisseur.html', {'form': form})
-            try:
-                fournisseur = Fournisseur.objects.create(
-                    user=user,
-                    nom=data['nom'],
-                    contact=data['contact'],
-                    email=email,
-                    adresse=data['adresse']
-                )
-                print(">>>> FOURNISSEUR CRÉÉ", fournisseur.pk, fournisseur.nom)
-                messages.success(request, "Fournisseur ajouté avec succès.")
-                return redirect('fournisseur_list')
-            except Exception as e:
-                print(">>>> ERREUR FOURNISSEUR", e)
-                traceback.print_exc()
-                form.add_error(None, f"Erreur fournisseur: {e}")
-                return render(request, 'add_fournisseur.html', {'form': form})
-        else:
-            print(">>>> FORM NOT VALID", form.errors)
-            # Affiche les erreurs dans le template
-            for field, errs in form.errors.items():
-                for err in errs:
-                    form.add_error(field, err)
+            user = User.objects.create_user(
+                username=data['username'],
+                password=data['password'],
+                email=data['email'],
+                role='fournisseur'
+            )
+            Fournisseur.objects.create(
+                user=user,
+                nom=data['nom'],
+                contact=data['contact'],
+                email=data['email'],
+                adresse=data['adresse']
+            )
+            messages.success(request, "Fournisseur et compte utilisateur créés.")
+            return redirect('fournisseur_list')
     else:
         form = FournisseurUserForm()
     return render(request, 'add_fournisseur.html', {'form': form})
@@ -529,7 +485,7 @@ def delete_fournisseur(request, id):
 @login_required
 def stats_articles_par_categorie(request):
     data = (
-        Article.objects.values('categorie')  # adapte selon ton modèle
+        Article.objects.values('categorie')
         .annotate(nombre=Count('id'))
         .order_by('-nombre')
     )
@@ -562,11 +518,8 @@ def stats_mouvements_stock(request):
 
 @login_required
 def stats_articles_rupture(request):
-    ruptures = Article.objects.filter(stock=0)
-    return JsonResponse({
-        'labels': [a.nom for a in ruptures],
-        'data': [a.stock for a in ruptures]
-    })
+    rupture = Article.objects.filter(stock__lt=F('stock_min')).count()
+    return JsonResponse({'rupture': rupture})
 
 @login_required
 def stats_commandes_par_fournisseur(request):
@@ -577,68 +530,45 @@ def stats_commandes_par_fournisseur(request):
     })
 from django.shortcuts import render, redirect
 
+from django.conf import settings
+from .models import Article
 
-def nouvelle_entree(request):
-    if request.method == 'POST':
-        form = MouvementStockForm(request.POST)
-        if form.is_valid():
-            mouvement = form.save(commit=False)
-            mouvement.type_mouvement = 'entree'
-            mouvement.user = request.user
-            mouvement.save()
-            messages.success(request, "Entrée de stock enregistrée avec succès.")
-            return redirect('product_list')
-        else:
-            print("❌ Erreurs du formulaire :", form.errors)  # ← AJOUT ICI
-    else:
-        form = MouvementStockForm()
-    return render(request, 'nouvelle_entree.html', {'form': form})
 @login_required
-@user_passes_test(is_gestionnaire)
+def mes_demandes(request):
+    demandes = DemandeArticle.objects.filter(employe=request.user)  
+    return render(request, 'mes_demandes.html', {'demandes': demandes})
 
-def nouvelle_sortie(request):
-    if request.method == 'POST':
-        form = MouvementStockForm(request.POST)
-        if form.is_valid():
-            mouvement = form.save(commit=False)
-            mouvement.type_mouvement = 'sortie'
-            mouvement.user = request.user
-            try:
-                mouvement.save()
-                messages.success(request, "Sortie de stock enregistrée avec succès.")
-                return redirect('product_list')  # Affiche la liste mise à jour
-            except ValueError as e:
-                form.add_error(None, str(e))
-    else:
-        form = MouvementStockForm()
-    return render(request, 'nouvelle_sortie.html', {'form': form})
 
+def is_gestionnaire(user):
+    return user.role == 'gestionnaire' or user.role == 'admin'
+@login_required
+
+
+@login_required
 def faire_demande(request):
     if request.method == 'POST':
+        print("====== POST reçu ======")
+        print(request.POST)
         form = DemandeArticleForm(request.POST)
+        print("Form valid ?", form.is_valid())
         if form.is_valid():
             demande = form.save(commit=False)
             demande.employe = request.user
             demande.save()
-            return redirect('mes_demandes')  # ou la page de ton choix
+            print("Demande créée !", demande)
+            messages.success(request, "Demande envoyée avec succès !")
+            return redirect('mes_demandes')
+        else:
+            print("Form errors :", form.errors)
+            messages.error(request, "Erreur dans le formulaire.")
     else:
         form = DemandeArticleForm()
     return render(request, 'faire_demande.html', {'form': form})
 @login_required
-def mes_demandes(request):
-    demandes = DemandeArticle.objects.filter(employe=request.user)
-    return render(request, 'mes_demandes.html', {'demandes': demandes})
-
-def is_gestionnaire(user):
-    return user.role == 'gestionnaire' or user.role == 'admin'
-
-@login_required
 @user_passes_test(is_gestionnaire)
 def liste_demandes(request):
-    # Toutes les demandes, du plus récent au plus ancien
     demandes = DemandeArticle.objects.select_related('article', 'employe').order_by('-date_demande')
 
-    # Filtre par statut si demandé (ex : ?statut=en_attente)
     statut = request.GET.get('statut')
     if statut:
         demandes = demandes.filter(statut=statut)
@@ -650,7 +580,6 @@ def liste_demandes(request):
     return render(request, "liste.html", context) 
 def export_articles(request, format):
     articles = Article.objects.all()
-    # Si tu veux filtrer selon la recherche :
     search = request.GET.get('search')
     if search:
         articles = articles.filter(nom__icontains=search) | articles.filter(reference__icontains=search)
@@ -672,7 +601,6 @@ def export_articles(request, format):
         return response
 
     elif format == "pdf":
-        # Simple PDF via pandas pour dépanner, version professionnelle sur demande
         import io
         from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
         from reportlab.lib import colors
@@ -709,13 +637,11 @@ def autocomplete_product_names(request):
     return JsonResponse({'results': results})
 
 def validate_product_field(request):
-    # Exemple basique à adapter
     if request.method == "POST":
         field_name = list(request.POST.keys())[0]
         value = request.POST[field_name]
         error = ""
 
-        # Validation selon le champ
         if field_name == "prix":
             try:
                 val = float(value)
@@ -726,14 +652,10 @@ def validate_product_field(request):
         if field_name == "nom":
             if len(value) < 2:
                 error = "Nom trop court."
-        # Ajoute d'autres règles ici...
 
         return JsonResponse({"error": error})
     return JsonResponse({"error": "Méthode non autorisée."}, status=405)
 def decouvrire_demo(request):
-    """
-    Affiche la page contenant la vidéo .mp4 que vous avez téléchargée.
-    """
     return render(request, 'decouvrire_demo.html')
 @login_required
 def modifier_quantite(request, pk):
@@ -741,17 +663,15 @@ def modifier_quantite(request, pk):
     if request.method == "POST":
         form = ArticleUpdateForm(request.POST, instance=article)
         if form.is_valid():
-            form.save()  # met à jour quantite + stock via save() override
-            # Après save(), on peut récupérer le user et son secondary_email
+            form.save()
             utilisateur = request.user
-            if article.stock < 20:
+            if article.stock < article.stock_min:
                 email_dest = utilisateur.secondary_email
                 if email_dest:
-                    # Composez ici le même corps / sujet que précédemment
                     sujet = f"⚠️ Stock critique pour « {article.nom} »"
                     corps = (
                         f"Bonjour {utilisateur.username},\n\n"
-                        f"Le stock de l’article « {article.nom} » (Réf : {article.reference}) "
+                        f"Le stock de l'article « {article.nom} » (Réf : {article.reference}) "
                         f"est critique ({article.stock} unités, seuil : {article.stock_min}).\n\n"
                         "Merci de réagir rapidement.\n"
                     )
@@ -766,94 +686,347 @@ def modifier_quantite(request, pk):
     else:
         form = ArticleUpdateForm(instance=article)
 
-    return render(request, "inventory/modifier_article.html", {
+    return render(request, "modifier_article.html", {
         "article": article,
         "form": form
     })
 
-
-
-
-
-
-
-
-
-
-def is_manager(user):
-    return getattr(user, "role", None) in {"gestionnaire", "admin"}
-
-import openai
-from django.conf import settings
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum
-
-from .models import Article, MouvementStock
-
-def is_manager(user):
-    return getattr(user, "role", None) in {"gestionnaire", "admin"}
-import logging
-logger = logging.getLogger(__name__)
-def is_manager(u):
-    return getattr(u, "role", "") in ("gestionnaire", "admin")
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-
-from .models import Article, MouvementStock
-from django.db.models import Sum
-from django.utils import timezone
-from .utils import generate_openai_report
-
-
-def is_manager(user):
-    return getattr(user, "role", "") in ("gestionnaire", "admin")
- # votre fonction wrapper OpenAI
-
-def is_manager(user):
-    return getattr(user, "role", "") in ("gestionnaire", "admin")
+@login_required
+def stats_total_articles(request):
+    total = Article.objects.count()
+    return JsonResponse({'total': total})
 
 @login_required
-@user_passes_test(is_manager)
-def report_ai_view(request):
-    # 1️⃣ On calcule toujours le résumé pour affichage en GET et POST
-    data_summary = []
-    articles   = Article.objects.all()
-    mouvements = MouvementStock.objects.all()
-    for art in articles:
-        in_qty  = (
-            mouvements
-            .filter(article=art, type_mouvement="ENTREE")
-            .aggregate(total=Sum('quantite'))['total']
-            or 0
-        )
-        out_qty = (
-            mouvements
-            .filter(article=art, type_mouvement="SORTIE")
-            .aggregate(total=Sum('quantite'))['total']
-            or 0
-        )
-        data_summary.append(
-            f"- {art.nom} : {in_qty} entrées, {out_qty} sorties, stock actuel {art.stock}"
-        )
+def stats_fournisseurs_actifs(request):
+    date_limite = timezone.now().date() - timedelta(days=30)
+    actifs = Fournisseur.objects.filter(
+        commande__date__gte=date_limite
+    ).distinct().count()
+    return JsonResponse({'actifs': actifs})
 
-    sections = []
-    error    = None
+@login_required
+def stats_commandes_en_cours(request):
+    en_cours = Commande.objects.filter(
+        etat__in=['en_attente', 'en cours']
+    ).count()
+    return JsonResponse({'en_cours': en_cours})
+
+@login_required
+def stats_evolution_stocks(request):
+    date_debut = timezone.now().date() - timedelta(days=30)
+    
+    mouvements = MouvementStock.objects.filter(
+        date__date__gte=date_debut
+    ).order_by('date__date')
+    
+    evolution = {}
+    date_courante = date_debut
+    while date_courante <= timezone.now().date():
+        evolution[date_courante.isoformat()] = 0
+        date_courante += timedelta(days=1)
+    
+    for mvt in mouvements:
+        date = mvt.date.date().isoformat()
+        if mvt.type_mouvement == 'entree':
+            evolution[date] += mvt.quantite
+        else:
+            evolution[date] -= mvt.quantite
+    
+    return JsonResponse({
+        'dates': list(evolution.keys()),
+        'variations': list(evolution.values())
+    })
+
+@login_required
+def stats_delai_livraison(request):
+    try:
+        date_limite = timezone.now().date() - timedelta(days=90)
+        
+       
+        fournisseurs = Fournisseur.objects.filter(
+            commande__date__gte=date_limite
+        ).distinct()
+
+        noms_fournisseurs = []
+        delais = []
+
+        for fournisseur in fournisseurs:
+            noms_fournisseurs.append(fournisseur.nom)
+           
+            delais.append(4)
+
+       
+        if not noms_fournisseurs:
+            noms_fournisseurs = ['Aucune donnée']
+            delais = [0]
+
+        return JsonResponse({
+            'fournisseurs': noms_fournisseurs,
+            'delais': delais
+        })
+    except Exception as e:
+        return JsonResponse({
+            'fournisseurs': ['Erreur de données'],
+            'delais': [0]
+        })
+
+@login_required
+def stats_stock_minimum(request):
+    try:
+        articles = Article.objects.filter(stock_min__gt=0)
+        
+        critique = 0
+        attention = 0
+        normal = 0
+        excedent = 0
+        
+        for article in articles:
+            ratio = article.stock / article.stock_min if article.stock_min > 0 else 0
+            
+            if ratio < 1:
+                critique += 1
+            elif ratio < 2:
+                attention += 1
+            elif ratio < 3:
+                normal += 1
+            else:
+                excedent += 1
+        
+        total = critique + attention + normal + excedent
+        if total == 0:
+            return JsonResponse({
+                'labels': ['Aucune donnée'],
+                'data': [1],
+                'colors': ['#e0e0e0']
+            })
+        
+        return JsonResponse({
+            'labels': [
+                f'Critique (<100%) : {critique} articles',
+                f'Attention (100-200%) : {attention} articles',
+                f'Normal (200-300%) : {normal} articles',
+                f'Excédent (>300%) : {excedent} articles'
+            ],
+            'data': [critique, attention, normal, excedent],
+            'colors': [
+                '#dc3545',
+                '#ffc107',
+                '#28a745',
+                '#17a2b8'
+            ]
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'labels': ['Erreur de données'],
+            'data': [1],
+            'colors': ['#dc3545']
+        })
+
+@login_required
+def stats_impact_co2(request):
+    articles = Article.objects.exclude(facteur_co2=0).order_by('-facteur_co2')[:10]
+    impact = {
+        a.nom: round(a.facteur_co2 * a.stock, 2)
+        for a in articles
+    }
+    
+    return JsonResponse({
+        'articles': list(impact.keys()),
+        'co2': list(impact.values())
+    })
+
+@login_required
+def stats_total_articles(request):
+    total = Article.objects.count()
+    return JsonResponse({'total': total})
+
+@login_required
+def stats_fournisseurs_actifs(request):
+    date_limite = timezone.now().date() - timedelta(days=30)
+    actifs = Fournisseur.objects.filter(
+        commande__date__gte=date_limite
+    ).distinct().count()
+    return JsonResponse({'actifs': actifs})
+
+@login_required
+def stats_commandes_en_cours(request):
+    en_cours = Commande.objects.filter(
+        etat__in=['en_attente', 'en cours']
+    ).count()
+    return JsonResponse({'en_cours': en_cours})
+
+@login_required
+def stats_evolution_stocks(request):
+    date_debut = timezone.now().date() - timedelta(days=30)
+    
+    mouvements = MouvementStock.objects.filter(
+        date__date__gte=date_debut
+    ).order_by('date__date')
+    
+    evolution = {}
+    date_courante = date_debut
+    while date_courante <= timezone.now().date():
+        evolution[date_courante.isoformat()] = 0
+        date_courante += timedelta(days=1)
+    
+    for mvt in mouvements:
+        date = mvt.date.date().isoformat()
+        if mvt.type_mouvement == 'entree':
+            evolution[date] += mvt.quantite
+        else:
+            evolution[date] -= mvt.quantite
+    
+    return JsonResponse({
+        'dates': list(evolution.keys()),
+        'variations': list(evolution.values())
+    })
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect
+from .forms import EntreeStockForm
+from .models import MouvementStock
+from django.db import connection
+def is_gestionnaire(user):
+    return user.role in ['gestionnaire', 'admin']
+@login_required
+def edit_product(request, id):
+    article = get_object_or_404(Article, id=id)
+    form = ArticleForm(request.POST or None, instance=article)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Produit modifié avec succès.")
+        return redirect('articles   ')
+    return render(request, 'edit_product.html', {'form': form, 'article': article})
+
+
+def nouvelle_entree(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = MouvementStockForm(request.POST)
+        if form.is_valid():
+            mouvement = form.save(commit=False)
+            mouvement.type_mouvement = 'entree'
+            article = mouvement.article
+            article.stock += mouvement.quantite
+            article.save()
+            mouvement.save()
+            articles = Article.objects.all()
+            return render(request, 'articles.html', {'products': articles, 'user': request.user})
+        else:
+            return HttpResponse('<div class="alert alert-danger">Erreur de saisie.</div>', status=400)
+    else:
+        form = MouvementStockForm()
+    return render(request, 'nouvelle_entree.html', {'form': form})
+@user_passes_test(is_gestionnaire)
+@login_required
+def nouvelle_sortie(request):
+    if request.method == "POST":
+        form = MouvementStockForm(request.POST)
+        if form.is_valid():
+            mouvement = form.save(commit=False)
+            mouvement.type_mouvement = 'sortie'
+            article = mouvement.article
+            if article.stock >= mouvement.quantite:
+                article.stock -= mouvement.quantite
+                article.save()
+                mouvement.save()
+
+                if article.stock < 10:
+                    user = request.user
+                    email_dest = getattr(user, 'secondary_email', None)
+                    if email_dest:
+                        sujet = f"⚠️ Stock critique pour « {article.nom} »"
+                        corps = (
+                            f"Bonjour {user.username},\n\n"
+                            f"Le stock de l'article « {article.nom} » (Réf : {article.reference}) "
+                            f"est critique ({article.stock} unités, seuil d’alerte : 10).\n\n"
+                            "Merci de réagir rapidement.\n"
+                        )
+                        send_mail(
+                            sujet,
+                            corps,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [email_dest],
+                            fail_silently=False
+                        )
+
+                messages.success(request, f"Sortie enregistrée pour {article.nom} (stock : {article.stock})")
+                return redirect('articles')
+            else:
+                messages.error(request, f"Stock insuffisant ! (stock actuel : {article.stock})")
+    else:
+        form = MouvementStockForm()
+    return render(request, "nouvelle_sortie.html", {"form": form})
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Article
+from .utils import generate_openai_report_from_articles
+
+
+
+
+@login_required
+@user_passes_test(is_gestionnaire)
+def report_ai_view(request):
+    articles = Article.objects.all()
+    error, rapport_texte = None, ""
 
     if request.method == "POST":
         try:
-            report    = generate_report(data_summary)
-            sections  = [s.strip() for s in report.split("\n\n") if s.strip()]
-        except RateLimitError:
-            error = "🚫 Votre quota OpenAI est dépassé, merci de réessayer plus tard."
-        except OpenAIError as e:
-            error = f"🚨 Erreur OpenAI : {e}"
+            rapport_texte = generate_openai_report_from_articles(articles)
         except Exception as e:
-            error = f"❌ Une erreur est survenue : {e}"
-
+            error = (
+                "⚠️ Impossible de générer le rapport IA pour le moment :<br>"
+                f"<span style='color:#c00;'>Erreur IA : {e}</span><br>"
+                "Merci de vérifier votre abonnement OpenAI ou contactez l'administrateur."
+            )
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                "rapport_texte": rapport_texte or "",
+                "error": error or ""
+            })
+    data_summary = [
+        f"{art.nom}: Stock={art.stock}, Stock min={art.stock_min}, Rupture={'Oui' if art.stock < art.stock_min else 'Non'}"
+        for art in articles
+    ]
     return render(request, "openai_report.html", {
+        "rapport_texte": rapport_texte,
         "data_summary": data_summary,
-        "sections":     sections,
-        "error":        error,
+        "error": error,
     })
-    
+from django.shortcuts import get_object_or_404, redirect
+
+@login_required
+@user_passes_test(is_gestionnaire)
+def action_demande(request, demande_id, action):
+    demande = get_object_or_404(DemandeArticle, id=demande_id)
+    if demande.statut == 'en_attente':
+        if action == 'approuver':
+            demande.statut = 'approuvee'
+            demande.save()
+        elif action == 'refuser':
+            demande.statut = 'refusee'
+            demande.save()
+    return redirect('liste_demandes')
+def is_gestionnaire(user):
+    return hasattr(user, 'role') and user.role == 'gestionnaire'
+
+@login_required
+@user_passes_test(is_gestionnaire)
+
+def action_demande(request, demande_id, action):
+    from .models import DemandeArticle
+    from django.shortcuts import get_object_or_404
+    if request.method == 'POST':
+        demande = get_object_or_404(DemandeArticle, id=demande_id)
+        if demande.statut == 'en_attente':
+            if action == 'approuver':
+                demande.statut = 'approuvee'
+            elif action == 'refuser':
+                demande.statut = 'refusee'
+            demande.save()
+            return JsonResponse({'ok': True})
+        else:
+            return JsonResponse({'ok': False, 'error': "Déjà traité."})
+    return JsonResponse({'ok': False, 'error': "Requête invalide."})

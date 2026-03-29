@@ -6,136 +6,33 @@
     <title>Compléter votre profil | GestionStock</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --main-bg: #f4f6fb;
-            --card-bg: rgba(255,255,255,0.97);
-            --card-shadow: 0 6px 32px 0 rgba(52, 87, 179, 0.11);
-            --primary: #0984e3;
-            --primary-light: #e8f0fc;
-            --success: #10b981;
-            --border: #e2e6ee;
-            --notif: #ffbe76;
-            --danger: #e74c3c;
-            --avatar-bg: #e8f0fc;
-        }
-        body {
-            background: var(--main-bg);
-            min-height: 100vh;
-        }
+        body { background: #f4f6fb; min-height: 100vh; }
         .profile-box {
             max-width: 420px;
             margin: 3rem auto;
-            padding: 2.4rem 2.2rem 2.1rem 2.2rem;
-            background: var(--card-bg);
+            padding: 2.4rem 2.2rem;
+            background: #fff;
             border-radius: 1.3rem;
-            box-shadow: var(--card-shadow);
-            animation: fadeInTop .8s cubic-bezier(.31,1.19,.58,1) both;
+            box-shadow: 0 6px 32px 0 rgba(52, 87, 179, 0.11);
         }
-        @keyframes fadeInTop {
-            from { opacity: 0; transform: translateY(-38px);}
-            to   { opacity: 1; transform: none;}
-        }
-        .profile-avatar {
-            display: flex; align-items: center; justify-content: center;
-            width: 70px; height: 70px;
-            border-radius: 50%;
-            background: var(--avatar-bg);
-            box-shadow: 0 2px 10px #0984e311;
-            margin: 0 auto 1.2rem auto;
-            font-size: 2.2rem;
-            color: var(--primary);
-        }
-        .stepper {
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.6rem; gap: 8px;
-        }
-        .step-circle {
-            width: 22px; height: 22px; border-radius: 50%;
-            background: var(--primary-light); color: var(--primary);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 1.1rem;
-            border: 2px solid var(--primary-light);
-            transition: background .21s, color .21s, border .21s;
-        }
-        .step-active {
-            background: var(--primary); color: #fff; border: 2px solid var(--primary);
-        }
-        .step-line {
-            width: 24px; height: 3px; background: var(--primary-light); border-radius: 6px;
-        }
-        .step-active ~ .step-line { background: var(--primary); }
-
-        .profile-title {
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--primary);
-            margin-bottom: .6rem;
-        }
-        .profile-desc {
-            text-align: center;
-            color: #657389;
-            margin-bottom: 1.3rem;
-            font-size: 1.04rem;
-        }
-        .form-label {
-            font-weight: 500; color: #2c3546;
-            margin-bottom: 0.2rem;
-        }
-        input, .form-control {
-            border-radius: .7rem!important;
-            border: 1.4px solid var(--border)!important;
-            font-size: 1.04rem;
-            transition: border .18s;
-            box-shadow: none!important;
-        }
-        input:focus, .form-control:focus {
-            border-color: var(--primary)!important;
-            box-shadow: 0 2px 12px #0984e321!important;
-            outline: none!important;
-        }
-        .btn-primary, .btn-success {
-            border-radius: 24px;
-            padding: 0.66rem 0;
-            font-weight: 600;
-            font-size: 1.04rem;
-            box-shadow: 0 2px 8px #0984e322;
-        }
-        .btn-primary { background: var(--primary); border: none; }
-        .btn-primary:hover { background: #0466b9; }
-        .btn-success { background: var(--success); border: none;}
-        .btn-success:hover { background: #059669; }
-        .alert-success {
-            background: #e8fbee; color: var(--success); border: none; font-weight: 500; margin-bottom: .7rem;
-            border-radius: .7rem; font-size: .98rem;
-        }
-        .alert-danger, .text-danger {
-            color: var(--danger)!important;
-            font-size: .97rem;
-        }
-        .text-secondary.small { color: #8692ad!important; }
-        .change-link {
-            margin-top: .6rem; display: block; text-align: center; font-size: .97rem;
-        }
-        @media (max-width: 600px) {
-            .profile-box { padding: 1.2rem .4rem 1rem .4rem;}
-        }
+        .profile-title { text-align: center; font-weight: 700; font-size: 1.4rem; color: #0984e3; }
+        .profile-desc { text-align: center; color: #657389; margin-bottom: 1.3rem; }
+        .stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 1.6rem; gap: 8px; }
+        .step-circle { width: 22px; height: 22px; border-radius: 50%; background: #e8f0fc; color: #0984e3;
+            display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.1rem; border: 2px solid #e8f0fc;}
+        .step-active { background: #0984e3; color: #fff; border: 2px solid #0984e3; }
+        .step-line { width: 24px; height: 3px; background: #e8f0fc; border-radius: 6px; }
+        .step-active ~ .step-line { background: #0984e3; }
     </style>
 </head>
 <body>
 <div class="profile-box">
-    <div class="profile-avatar mb-2">
-        <i class="fas fa-user-circle"></i>
-    </div>
-
     <div class="stepper mb-2">
         <div class="step-circle {% if step == 'email' %}step-active{% endif %}">1</div>
         <div class="step-line"></div>
         <div class="step-circle {% if step == 'verify' %}step-active{% endif %}">2</div>
     </div>
-
     <div class="profile-title">Vérification de votre profil</div>
     <div class="profile-desc">Veuillez compléter votre profil pour accéder à la plateforme.</div>
 
@@ -145,34 +42,45 @@
       {% endfor %}
     {% endif %}
 
+    {% if error %}
+        <div class="alert alert-danger"><pre>{{ error }}</pre></div>
+    {% endif %}
+
     {% if step == 'email' %}
-        <form method="post" class="mt-4" autocomplete="off">
+        <form method="post" action="{% url 'complete_profile' %}" class="mt-4" autocomplete="off">
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label">Votre adresse e-mail</label>
+                <label for="id_email" class="form-label">Votre adresse e-mail</label>
                 {{ form.email }}
+                {% if form.email.errors %}
+                  <div class="text-danger small">{{ form.email.errors|join:", " }}</div>
+                {% endif %}
             </div>
+            {% if form.non_field_errors %}
+                <div class="text-danger small">{{ form.non_field_errors|join:", " }}</div>
+            {% endif %}
             <button type="submit" class="btn btn-primary w-100">Recevoir mon code</button>
         </form>
     {% elif step == 'verify' %}
-        <form method="post" class="mt-4" autocomplete="off">
+        <form method="post" action="{% url 'complete_profile' %}" class="mt-4" autocomplete="off">
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label">Code reçu par e-mail <span class="text-secondary">({{ email }})</span></label>
+                <label for="id_code" class="form-label">
+                    Code reçu par e-mail <span class="text-secondary">({{ email }})</span>
+                </label>
                 {{ form.code }}
                 {% if form.code.errors %}
-                    <div class="text-danger mt-1 small">{{ form.code.errors|join:", " }}</div>
+                    <div class="text-danger small">{{ form.code.errors|join:", " }}</div>
                 {% endif %}
             </div>
+            {% if form.non_field_errors %}
+                <div class="text-danger small">{{ form.non_field_errors|join:", " }}</div>
+            {% endif %}
             <button type="submit" class="btn btn-success w-100">Valider le code</button>
         </form>
-        
-<a href="{% url 'complete_profile' %}?reset=1"
-   class="change-link text-secondary small">
-  <i class="fas fa-sync-alt me-1"></i>Changer d’adresse e-mail
-</a>
-
-
+        <a href="{% url 'complete_profile' %}?reset=1" class="d-block text-center mt-3 small text-secondary">
+            <i class="fas fa-sync-alt me-1"></i>Changer d’adresse e-mail
+        </a>
     {% endif %}
 </div>
 </body>
